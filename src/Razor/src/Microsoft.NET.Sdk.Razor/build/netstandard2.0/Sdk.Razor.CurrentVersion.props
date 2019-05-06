@@ -15,6 +15,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
 
   <!--
+    Properties for static assets in the Razor SDK.
+  -->
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\node_modules\**;node_modules\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\jspm_packages\**;jspm_packages\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\bower_components\**;bower_components\**</DefaultItemExcludes>
+    <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);wwwroot\**</DefaultWebContentItemExcludes>
+  </PropertyGroup>
+
+  <!--
     Default properties for common Razor SDK behavior.
   -->
   <PropertyGroup>

@@ -483,6 +483,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       '$(EnableDefaultRazorGenerateItems)'=='true'">
 
       <Content Condition="'%(Content.Extension)'=='.cshtml'" Pack="$(IncludeRazorContentInPack)" />
+      <Content Condition="'%(Content.Extension)'=='.razor'" Pack="$(IncludeRazorContentInPack)" />
     </ItemGroup>
   </Target>
 
