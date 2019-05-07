@@ -1,2 +1,139 @@
 <Project ToolsVersion="14.0">
+
+  <PropertyGroup>
+    <GenerateAspNetCoreStaticAssetsManifestDependsOn>ResolveAspNetCoreStaticAssetsInputs</GenerateAspNetCoreStaticAssetsManifestDependsOn>
+    <ResolveAspNetCoreStaticAssetsInputsDependsOn></ResolveAspNetCoreStaticAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="PrepareForGenerateAspNetCoreStaticAssetsManifest">
+  
+  <PropertyGroup>
+    <_GeneratedAspnetCoreStaticAssetInputsCacheFile>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticAssets.cache</_GeneratedAspnetCoreStaticAssetInputsCacheFile>
+    <_GeneratedAspNetCoreStaticAssetsDevelopmentManifest>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticAssets.xml</_GeneratedAspNetCoreStaticAssetsDevelopmentManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
+    <_ExternalAspNetCoreStaticAssetManifestEntry
+      Include="%(AspNetCoreStaticAsset)"
+      Condition="'%(SourceType)' != ''">
+        <BasePath>%(BasePath)</BasePath>
+        <ContentRoot>%(ContentRoot)</ContentRoot>
+    </_ExternalAspNetCoreStaticAssetManifestEntry>
+  </ItemGroup>
+
+  <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
+  <ItemGroup>
+    <EmbeddedResource Condition="'@(_ExternalAspNetCoreStaticAssetManifestEntry->Count())' != '0'"
+      Include="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)"
+      LogicalName="Microsoft.AspNetCore.StaticAssets.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FileWrites Include="$(_GeneratedAspnetCoreStaticAssetInputsCacheFile)" />
+  </ItemGroup>
+
+  </Target>
+
+  <Target 
+    Name="_CreateAspNetCoreStaticAssetInputsCacheFile"
+    Condition="'@(_ExternalAspNetCoreStaticAssetManifestEntry->Count())' != '0'"
+    DependsOnTargets="ResolveAspNetCoreStaticAssetsInputs;PrepareForGenerateAspNetCoreStaticAssetsManifest">
+    
+    <Hash ItemsToHash="@(_ExternalAspNetCoreStaticAssetManifestEntry)">
+      <Output TaskParameter="HashResult" PropertyName="_AspNetCoreStaticAssetCacheHash" />
+    </Hash>
+
+    <WriteLinesToFile 
+      Lines="$(_AspNetCoreStaticAssetCacheHash)" 
+      File="$(_GeneratedAspnetCoreStaticAssetInputsCacheFile)" 
+      Overwrite="True" 
+      WriteOnlyWhenDifferent="True" />
+
+  </Target>
+
+  <!-- 
+    This target generates a manifest for development time that includes information
+    about the base path for the referenced package and project static assets. The
+    manifest includes the content root and the base path for each of the referenced
+    packages and projects.
+
+    Ideally, each package/project contains a unique base path and a given content
+    root, but we don't check for duplicates on neither of them.
+     -->
+
+  <Target 
+    Name="GenerateAspNetCoreStaticAssetsManifest"
+    Inputs="$(_GeneratedAspnetCoreStaticAssetInputsCacheFile)"
+    Outputs="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)"
+    BeforeTargets="AssignTargetPaths"
+    DependsOnTargets="$(GenerateAspNetCoreStaticAssetsManifestDependsOn)">
+  
+    <GenerateAspNetCoreStaticAssetsManifestTask 
+      ContentPaths="@(_ExternalAspNetCoreStaticAssetManifestEntry)"
+      ManifestTargetPath="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)" />
+  
+  </Target>
+
+  <Target Name="EmbeddAspNetCoreStaticAssetsManifest">
+  </Target>
+
+  <!-- This target collects all the AspNetCoreStaticAsset from different sources:
+       * The current project AspNetCoreStaticAsset that come from wwwroot\** by default.
+       * Assets from referenced projects that get retrieved invoking an MSBuild target on
+         the referenced projects.
+       * Assets from the referenced packages. These will be implicitly included when nuget
+         restores the package and includes the package props file for the package.
+  -->
+  <Target 
+    Name="ResolveAspNetCoreStaticAssetsInputs">
+    <PropertyGroup>
+      <!-- The _SafeBasePath is used as a path segment in the urls that we will
+           be exposing content from when the library is referenced as a package
+           or as a project by a web application. Our convention will be to expose
+           content directly on _content/<<_SafeBasePath>>
+           
+           We simply remove the dots from the package id so that a package
+           like Microsoft.AspNetCore.Identity becomes MicrosoftAspNetCoreIdentity 
+           
+           TODO: Investigate if we need to do something more sophisticated here.
+      -->
+      <_SafeBasePath>$(PackageId).Replace('.','')</_SafeBasePath>
+    </PropertyGroup>
+
+    <!-- AspNetCoreStaticAsset from the current project -->
+
+    <ItemGroup>
+      <!-- 
+        Should we promote 'wwwroot\**'' to a property?
+        We don't want to capture any content outside the content root, that's why we don't do
+        @(Content) here.
+      -->
+      <AspNetCoreStaticAsset Include="wwwroot\**">
+        <!-- (PackageReference,ProjectReference,'' (CurrentProject)) -->
+        <SourceType></SourceType>
+        <!-- Identifier describing the source, the package id, the project name, empty for the current project.  -->
+        <SourceId></SourceId>
+        <!-- 
+          Full path to the content root for the item:
+          * For packages it corresponds to %userprofile%/.nuget/packages/<<PackageId>>/<<PackageVersion>>/razorContent
+          * For referenced projects it corresponds to <<FullProjectRefPath>>/wwwroot
+          * For the current projects it corresponds to $(MSBuildThisProjectFileDirectory)wwwroot\
+        -->
+        <ContentRoot>$([MSBuild]::EnsureTrailingSlash('$(MSBuildThisProjectFileDirectory)'))wwwroot</ContentRoot>
+        <!-- Subsection (folder) from the url space where content for this library will be served. -->
+        <BasePath>_content\$(_SafeBasePath)</BasePath>
+        <!-- Relative path from the content root for the file. At publish time, we combine the BasePath + Relative
+  path to determine the final path for the file. -->
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+
+      </AspNetCoreStaticAsset>
+    </ItemGroup>
+
+    <!-- AspNetCoreStaticAsset from referenced projects. -->
+    <!-- TODO: Include implementation -->
+
+    <!-- AspNetCoreStaticAsset from packages are already available, so we don't do anything. -->
+  </Target>
+
 </Project>
