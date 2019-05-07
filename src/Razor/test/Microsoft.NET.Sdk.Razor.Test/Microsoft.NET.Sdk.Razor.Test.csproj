@@ -92,8 +92,23 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
   </Target>
 
-  <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build">
+  <Target Name="RestoreTestProjects" BeforeTargets="Build" AfterTargets="Restore" DependsOnTargets="EnsureFreshTestPackages">
     <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" />
   </Target>
 
+
+  <Target Name="EnsureFreshTestPackages">
+    
+    <ItemGroup>
+      <TestPackageDirectoriesToRemove Include="$(NuGetPackageRoot)packagelibrarydirectdependency" />
+      <TestPackageDirectoriesToRemove Include="$(NuGetPackageRoot)packagelibrarytransitivedependency" />
+    </ItemGroup>
+    <Message Importance="high" Text="@(TestPackageDirectoriesToRemove)" />
+    
+    <RemoveDir 
+      Directories="@(TestPackageDirectoriesToRemove)"
+      Condition="Exists('%(FullPath)')" />
+
+    <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="CreateTestPackages" />
+  </Target>
 </Project>

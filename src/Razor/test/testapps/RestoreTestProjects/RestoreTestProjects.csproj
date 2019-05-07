@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RestoreSources>
+      $(RestoreSources);
+      $(MSBuildThisFileDirectory)..\TestPackageRestoreSource\
+    </RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +24,18 @@
     <ProjectReference Include="..\SimpleMvc22\SimpleMvc22.csproj" />
     <ProjectReference Include="..\SimplePages\SimplePages.csproj" />
 
+    <ProjectReference Include="..\AppWithPackageAndP2PReference\AppWithPackageAndP2PReference.csproj" />
+
     <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
     <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.ComponentShim\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj"/>
   </ItemGroup>
+
+  <Target Name="CreateTestPackages">
+    <MSBuild
+      Projects="..\PackageLibraryDirectDependency\PackageLibraryDirectDependency.csproj;
+                ..\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj"      
+      Targets="Pack"
+    />
+  </Target>
 
 </Project>

@@ -17,10 +17,9 @@
     <!-- We don't want to run build server when not running as tests. -->
     <UseRazorBuildServer>false</UseRazorBuildServer>
 
-    <!-- Add an additional restore source pointing to the already built packages with content -->
     <RestoreSources>
       $(RestoreSources);
-      $(MSBuildThisFileDirectory)..\TestPackageRestoreSource
+      $(MSBuildThisFileDirectory)..\TestPackageRestoreSource\
     </RestoreSources>
 
   </PropertyGroup>
@@ -37,7 +36,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll" />
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll" />
   </ItemGroup>
 </Project>
