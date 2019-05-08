@@ -214,6 +214,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             foreach (var project in projectsToPack)
             {
+                output.WriteLine(project);
+            }
+
+            foreach (var project in projectsToPack)
+            {
                 var psi = new ProcessStartInfo
                 {
                     FileName = DotNetMuxer.MuxerPathOrDefault(),
