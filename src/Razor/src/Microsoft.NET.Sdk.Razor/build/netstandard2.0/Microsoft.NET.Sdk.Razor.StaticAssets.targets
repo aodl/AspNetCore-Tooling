@@ -1,43 +1,40 @@
 <Project ToolsVersion="14.0">
 
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateAspNetCoreStaticAssetsManifest"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
+
   <PropertyGroup>
-    <GenerateAspNetCoreStaticAssetsManifestDependsOn>ResolveAspNetCoreStaticAssetsInputs</GenerateAspNetCoreStaticAssetsManifestDependsOn>
+    <GenerateAspNetCoreStaticAssetsManifestDependsOn>
+      ResolveAspNetCoreStaticAssetsInputs;
+      PrepareForGenerateAspNetCoreStaticAssetsManifest;
+      _CreateAspNetCoreStaticAssetInputsCacheFile
+    </GenerateAspNetCoreStaticAssetsManifestDependsOn>
     <ResolveAspNetCoreStaticAssetsInputsDependsOn></ResolveAspNetCoreStaticAssetsInputsDependsOn>
   </PropertyGroup>
 
   <Target Name="PrepareForGenerateAspNetCoreStaticAssetsManifest">
   
-  <PropertyGroup>
-    <_GeneratedAspnetCoreStaticAssetInputsCacheFile>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticAssets.cache</_GeneratedAspnetCoreStaticAssetInputsCacheFile>
-    <_GeneratedAspNetCoreStaticAssetsDevelopmentManifest>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticAssets.xml</_GeneratedAspNetCoreStaticAssetsDevelopmentManifest>
-  </PropertyGroup>
+    <PropertyGroup>
+      <_GeneratedAspnetCoreStaticAssetInputsCacheFile>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticAssets.cache</_GeneratedAspnetCoreStaticAssetInputsCacheFile>
+      <_GeneratedAspNetCoreStaticAssetsDevelopmentManifest>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticAssets.xml</_GeneratedAspNetCoreStaticAssetsDevelopmentManifest>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
-    <_ExternalAspNetCoreStaticAssetManifestEntry
-      Include="%(AspNetCoreStaticAsset)"
-      Condition="'%(SourceType)' != ''">
-        <BasePath>%(BasePath)</BasePath>
-        <ContentRoot>%(ContentRoot)</ContentRoot>
-    </_ExternalAspNetCoreStaticAssetManifestEntry>
-  </ItemGroup>
-
-  <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
-  <ItemGroup>
-    <EmbeddedResource Condition="'@(_ExternalAspNetCoreStaticAssetManifestEntry->Count())' != '0'"
-      Include="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)"
-      LogicalName="Microsoft.AspNetCore.StaticAssets.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <FileWrites Include="$(_GeneratedAspnetCoreStaticAssetInputsCacheFile)" />
-  </ItemGroup>
+    <ItemGroup>
+      <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
+      <_ExternalAspNetCoreStaticAssetManifestEntry
+        Include="%(AspNetCoreStaticAsset.Identity)"
+        Condition="'%(SourceType)' != ''">
+          <BasePath>%(AspNetCoreStaticAsset.BasePath)</BasePath>
+          <ContentRoot>%(AspNetCoreStaticAsset.ContentRoot)</ContentRoot>
+      </_ExternalAspNetCoreStaticAssetManifestEntry>
+    </ItemGroup>
 
   </Target>
 
   <Target 
     Name="_CreateAspNetCoreStaticAssetInputsCacheFile"
-    Condition="'@(_ExternalAspNetCoreStaticAssetManifestEntry->Count())' != '0'"
     DependsOnTargets="ResolveAspNetCoreStaticAssetsInputs;PrepareForGenerateAspNetCoreStaticAssetsManifest">
     
     <Hash ItemsToHash="@(_ExternalAspNetCoreStaticAssetManifestEntry)">
@@ -49,6 +46,10 @@
       File="$(_GeneratedAspnetCoreStaticAssetInputsCacheFile)" 
       Overwrite="True" 
       WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedAspnetCoreStaticAssetInputsCacheFile)" />
+    </ItemGroup>
 
   </Target>
 
@@ -69,10 +70,17 @@
     BeforeTargets="AssignTargetPaths"
     DependsOnTargets="$(GenerateAspNetCoreStaticAssetsManifestDependsOn)">
   
-    <GenerateAspNetCoreStaticAssetsManifestTask 
-      ContentPaths="@(_ExternalAspNetCoreStaticAssetManifestEntry)"
-      ManifestTargetPath="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)" />
+    <GenerateAspNetCoreStaticAssetsManifest 
+      ContentRootDefinitions="@(_ExternalAspNetCoreStaticAssetManifestEntry)"
+      TargetManifestPath="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)" />
   
+      <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
+    <ItemGroup>
+      <EmbeddedResource Condition="'@(_ExternalAspNetCoreStaticAssetManifestEntry->Count())' != '0'"
+        Include="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)"
+        LogicalName="Microsoft.AspNetCore.StaticAssets.xml" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="EmbeddAspNetCoreStaticAssetsManifest">

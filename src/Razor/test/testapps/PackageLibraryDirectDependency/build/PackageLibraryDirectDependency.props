@@ -1,10 +1,10 @@
 <Project>
   <ItemGroup>
     <AspNetCoreStaticAsset Include="$(MSBuildThisFileDirectory)..\razorContent\**">
-      <SourceType>PackageType</SourceType>
+      <SourceType>Package</SourceType>
       <SourceId>PackageLibraryDirectDependency</SourceId>
-      <ContentRoot>$([MSBuild]::EnsureTrailingSlash('$(MSBuildThisProjectFileDirectory)'))wwwroot</ContentRoot>
-      <BasePath>_content\$(_SafeBasePath)</BasePath>
+      <ContentRoot>$([MSBuild]::EnsureTrailingSlash('$(MSBuildThisFileDirectory)..\razorContent'))</ContentRoot>
+      <BasePath>_content\PackageLibraryDirectDependency</BasePath>
       <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
     </AspNetCoreStaticAsset>
   </ItemGroup>

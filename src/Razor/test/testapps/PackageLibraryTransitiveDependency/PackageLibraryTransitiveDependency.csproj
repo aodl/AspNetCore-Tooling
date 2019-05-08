@@ -35,8 +35,8 @@
   <!-- Test Placeholder -->
 
   <ItemGroup>
-    <Content Include="build\**" Pack="true" PackagePath="build" />
-    <Content Update="wwwroot\**" Pack="true" PackagePath="razorContent" />
+    <Content Include="build\**" Pack="true" PackagePath="buildTransitive" />
+    <Content Include="wwwroot\**" Pack="true" PackagePath="razorContent" />
   </ItemGroup>
 
 </Project>
