@@ -32,11 +32,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             if (localPackageCache != null)
             {
-                if (!Directory.Exists(localPackageCache))
-                {
-                    Directory.CreateDirectory(localPackageCache);
-                }
-
                 processStartInfo.Environment.Add("NUGET_PACKAGES", localPackageCache);
             }
 

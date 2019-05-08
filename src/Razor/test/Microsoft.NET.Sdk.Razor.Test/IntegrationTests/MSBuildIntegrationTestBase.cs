@@ -47,6 +47,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             set { _project.Value = value; }
         }
 
+        // Wether to use a local cache or not to prevent polluting the global cache
+        // with test packages.
         public bool UseLocalPackageCache { get; set; }
 
         protected string RazorIntermediateOutputPath => Path.Combine(IntermediateOutputPath, "Razor");
@@ -72,6 +74,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var timeout = suppressTimeout ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
 
+            // Additional restore sources for packages used in testing
             var additionalRestoreSources = string.Join(
                 ',',
                 typeof(PackageTestProjectsFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -101,6 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 if (!Directory.Exists(LocalNugetPackagesCacheTempPath))
                 {
+                    // The local cache folder needs to exist so that nuget does not complain
                     Directory.CreateDirectory(LocalNugetPackagesCacheTempPath);
                 }
             }
