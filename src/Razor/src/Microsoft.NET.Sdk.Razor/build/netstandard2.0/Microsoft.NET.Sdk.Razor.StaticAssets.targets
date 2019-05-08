@@ -81,6 +81,10 @@
         LogicalName="Microsoft.AspNetCore.StaticAssets.xml" />
     </ItemGroup>
 
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="EmbeddAspNetCoreStaticAssetsManifest">
