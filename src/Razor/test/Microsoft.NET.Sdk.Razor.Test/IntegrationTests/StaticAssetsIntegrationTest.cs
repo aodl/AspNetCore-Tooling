@@ -1,9 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -17,15 +19,40 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("AppWithPackageAndP2PReference")]
-        public async Task GenerateAspNetCoreStaticAssetsManifest_Success_CreatesManifest()
+        public async Task Build_GeneratesAspNetCoreStaticAssetsManifest_Success_CreatesManifest()
         {
-            var result = await DotnetMSBuild("GenerateAspNetCoreStaticAssetsManifest");
+            var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
 
             // GenerateAspNetCoreStaticAssetsManifest should generate the manifest and the cache.
             Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.xml");
             Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.cache");
+
+            var path = Assert.FileExists(result, OutputPath, "AppWithPackageAndP2PReference.dll");
+            var assembly = Assert.ContainsEmbeddedResource(path, "Microsoft.AspNetCore.StaticAssets.xml");
+            using (var reader = new StreamReader(assembly))
+            {
+                var data = XDocument.Parse(reader.ReadToEnd());
+                Assert.Equal("AspNetCoreStaticAssets", data.Root.Name);
+                Assert.Equal(2, data.Root.Descendants().Count());
+            }
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_DoesNotEmbedManifestWhen_NoStaticResourcesAvailable()
+        {
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+
+            // GenerateAspNetCoreStaticAssetsManifest should generate the manifest and the cache.
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.xml");
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.cache");
+
+            var path = Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
+            Assert.DoesNotContainEmbeddedResource(path, "Microsoft.AspNetCore.StaticAssets.xml");
         }
 
         [Fact]

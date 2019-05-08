@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -342,6 +343,83 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 throw new FileFoundException(result, filePath);
             }
+        }
+
+        public static Stream ContainsEmbeddedResource(string assemblyPath, string resourceName)
+        {
+            var stream = ExtractManifest(assemblyPath, resourceName);
+            Assert.NotNull(stream);
+
+            return stream;
+        }
+
+        public static void DoesNotContainEmbeddedResource(string assemblyPath, string resourceName)
+        {
+            var stream = ExtractManifest(assemblyPath, resourceName);
+            Assert.Null(stream);
+        }
+
+        private static unsafe Stream ExtractManifest(string path, string expectedResourceName)
+        {
+            using (var peStream = File.OpenRead(path))
+            {
+                using (var peReader = new PEReader(peStream))
+                {
+                    var mdReader = peReader.GetMetadataReader();
+
+                    foreach (var resourceHandle in mdReader.ManifestResources)
+                    {
+                        var resource = mdReader.GetManifestResource(resourceHandle);
+
+                        if (!resource.Implementation.IsNil)
+                        {
+                            continue; // resource is not embedded.
+                        }
+
+                        var resourceName = mdReader.GetString(resource.Name);
+                        if (!string.Equals(expectedResourceName, resourceName))
+                        {
+                            continue;
+                        }
+
+                        checked // arithmetic overflow here could cause AV
+                        {
+                            // Locate start and end of PE image in unmanaged memory.
+                            var block = peReader.GetEntireImage();
+                            Debug.Assert(block.Pointer != null && block.Length > 0);
+
+                            var peImageStart = block.Pointer;
+                            var peImageEnd = peImageStart + block.Length;
+
+                            // Locate offset to resources within PE image.
+                            int offsetToResources;
+                            if (!peReader.PEHeaders.TryGetDirectoryOffset(peReader.PEHeaders.CorHeader.ResourcesDirectory, out offsetToResources))
+                            {
+                                throw new InvalidDataException("Failed to get offset to resources in PE file.");
+                            }
+                            Debug.Assert(offsetToResources > 0);
+                            var resourceStart = peImageStart + offsetToResources + resource.Offset;
+
+                            // Get the length of the the resource from the first 4 bytes.
+                            if (resourceStart >= peImageEnd - sizeof(int))
+                            {
+                                throw new InvalidDataException("resource offset out of bounds.");
+                            }
+
+                            var resourceLength = new BlobReader(resourceStart, sizeof(int)).ReadInt32();
+                            resourceStart += sizeof(int);
+                            if (resourceLength < 0 || resourceStart >= peImageEnd - resourceLength)
+                            {
+                                throw new InvalidDataException("resource offset or length out of bounds.");
+                            }
+
+                            return new UnmanagedMemoryStream(resourceStart, resourceLength);
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         public static void NuspecContains(MSBuildResult result, string nuspecPath, string expected)

@@ -34,7 +34,7 @@
     <MSBuild
       Projects="..\PackageLibraryDirectDependency\PackageLibraryDirectDependency.csproj;
                 ..\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj"      
-      Targets="Pack"
+      Targets="Restore;Pack"
     />
   </Target>
 
