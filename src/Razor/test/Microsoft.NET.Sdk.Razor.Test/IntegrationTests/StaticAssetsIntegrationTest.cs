@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 // Wait for 10 seconds or fail. If we take longer
                 // it likely means we are adding unexpected dependencies.
-                Assert.True(process.WaitForExit(10 * 1000));
+                Assert.True(process.WaitForExit(180 * 1000));
                 output.WriteLine(process.StandardOutput.ReadToEnd());
                 Assert.Equal(0, process.ExitCode);
             }
