@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     Directory.CreateDirectory(localPackageCache);
                 }
 
-                processStartInfo.EnvironmentVariables.Add("NUGET_PACKAGES", localPackageCache);
+                processStartInfo.Environment.Add("NUGET_PACKAGES", localPackageCache);
             }
 
             if (msBuildProcessKind == MSBuildProcessKind.Desktop)
