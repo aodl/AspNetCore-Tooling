@@ -70,9 +70,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var basePath = contentRootDefinition.GetMetadata(BasePath);
                 var contentRoot = contentRootDefinition.GetMetadata(ContentRoot);
                 
-                nodes.Add(new XElement("ContentRoot",
-                    new XAttribute("BasePath", basePath),
-                    new XAttribute("Path", contentRoot)));
+                // At this point we already know that there are no elements with different base paths and same content roots
+                // or viceversa. Here we simply skip additional items that have the same base path and same content root.
+                if (!nodes.Exists(e => e.Attribute(BasePath).Value.Equals(basePath, StringComparison.OrdinalIgnoreCase)))
+                {
+                    nodes.Add(new XElement("ContentRoot",
+                        new XAttribute("BasePath", basePath),
+                        new XAttribute("Path", contentRoot)));
+                }
             }
 
             return nodes;
@@ -96,8 +101,18 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 }
             }
 
-            var basePaths = new Dictionary<string, ITaskItem>();
-            var contentRootPaths = new Dictionary<string, ITaskItem>();
+            // We want to validate that there are no different item groups that share either the same base path
+            // but different content roots or that share the same content root but different base paths.
+            // We pass in all the static assets that we discovered to this task without making any distinction for
+            // duplicates, so here we skip elements for which we are already tracking an element with the same
+            // content root path and same base path.
+
+            // Case-sensitivity depends on the underlyin OS so we are not going to do anything to enforce it here.
+            // Any two items that match base path and content root in a case-insensitive way won't produce an error.
+            // Any other two items will produce an error even if there is only a casing difference between either the
+            // base paths or the content roots.
+            var basePaths = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
+            var contentRootPaths = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < ContentRootDefinitions.Length; i++)
             {
@@ -107,18 +122,43 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 
                 if(basePaths.TryGetValue(basePath, out var existingBasePath))
                 {
-                    Log.LogError($"Duplicate base paths '{basePath}' for content root paths '{contentRoot}' and '{existingBasePath.GetMetadata(ContentRoot)}'");
-                    return false;
+                    var existingBasePathContentRoot = existingBasePath.GetMetadata(ContentRoot);
+                    if (!string.Equals(contentRoot, existingBasePathContentRoot, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Case:
+                        // Item1: /_content/Library, /package/aspnetContent1
+                        // Item2: /_content/Library, /package/aspnetContent2
+                        Log.LogError($"Duplicate base paths '{basePath}' for content root paths '{contentRoot}' and '{existingBasePathContentRoot}'. " +
+                            $"('{contentRootDefinition.ItemSpec}', '{existingBasePath.ItemSpec}')");
+                        return false;
+                    }
+                    // It was a duplicate, so we skip it.
+                    // Case:
+                    // Item1: /_content/Library, /package/aspnetContent
+                    // Item2: /_content/Library, /package/aspnetContent
                 }
-
-                if(contentRootPaths.TryGetValue(contentRoot, out var existingContentRoot))
+                else
                 {
-                    Log.LogError($"Duplicate content root paths '{contentRoot}' for base paths '{basePath}' and '{existingContentRoot.GetMetadata(BasePath)}'");
-                    return false;
+                    if(contentRootPaths.TryGetValue(contentRoot, out var existingContentRoot))
+                    {
+                        // Case:
+                        // Item1: /_content/Library1, /package/aspnetContent
+                        // Item2: /_content/Library2, /package/aspnetContent
+                        Log.LogError($"Duplicate content root paths '{contentRoot}' for base paths '{basePath}' and '{existingContentRoot.GetMetadata(BasePath)}' " +
+                            $"('{contentRootDefinition.ItemSpec}', '{existingContentRoot.ItemSpec}')");
+                        return false;
+                    }
                 }
 
-                basePaths.Add(basePath, contentRootDefinition);
-                contentRootPaths.Add(contentRoot, contentRootDefinition);
+                if (!basePaths.ContainsKey(basePath))
+                {
+                    basePaths.Add(basePath, contentRootDefinition);
+                }
+
+                if (!contentRootPaths.ContainsKey(contentRoot))
+                {
+                    contentRootPaths.Add(contentRoot, contentRootDefinition);
+                }
             }
 
             return true;

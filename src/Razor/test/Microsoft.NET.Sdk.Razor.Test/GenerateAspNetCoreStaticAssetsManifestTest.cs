@@ -101,7 +101,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // Assert
             Assert.False(result);
             var message = Assert.Single(errorMessages);
-            Assert.Equal(message, $@"Duplicate base paths 'MyLibrary' for content root paths 'c:\nuget\MyOtherLibrary' and 'c:\nuget\MyLibrary'");
+            Assert.Equal(
+                @"Duplicate base paths 'MyLibrary' for content root paths 'c:\nuget\MyOtherLibrary' and 'c:\nuget\MyLibrary'. ('wwwroot\otherLib.js', 'wwwroot\sample.js')",
+                message);
         }
 
         [Fact]
@@ -134,7 +136,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // Assert
             Assert.False(result);
             var message = Assert.Single(errorMessages);
-            Assert.Equal(message, $@"Duplicate content root paths './MyLibrary' for base paths 'MyOtherLibrary' and 'MyLibrary'");
+            Assert.Equal(
+                @"Duplicate content root paths './MyLibrary' for base paths 'MyOtherLibrary' and 'MyLibrary' ('wwwroot\otherLib.js', 'wwwroot\sample.js')",
+                message);
         }
 
         [Fact]
@@ -192,6 +196,53 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         CreateItem(@"wwwroot\sample.js", new Dictionary<string,string>{
                             ["BasePath"] = "MyLibrary",
                             ["ContentRoot"] = @"c:/nuget/MyLibrary/razorContent"
+                        }),
+                    },
+                    TargetManifestPath = file
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                Assert.True(result);
+                var document = File.ReadAllText(file);
+                Assert.Equal(expectedDocument, document);
+            }
+            finally
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+            }
+        }
+
+        [Fact]
+        public void SkipsAdditionalElements_WithSameBasePathAndSameContentRoot()
+        {
+            // Arrange
+            var file = Path.GetTempFileName();
+            var expectedDocument = @"<AspNetCoreStaticAssets Version=""1.0"">
+  <ContentRoot BasePath=""MyLibrary"" Path=""c:/nuget/MyLibrary/razorContent"" />
+</AspNetCoreStaticAssets>";
+
+            try
+            {
+                var buildEngine = new Mock<IBuildEngine>();
+
+                var task = new GenerateAspNetCoreStaticAssetsManifest
+                {
+                    BuildEngine = buildEngine.Object,
+                    ContentRootDefinitions = new TaskItem[] {
+                        CreateItem(@"wwwroot\sample.js", new Dictionary<string,string>{
+                            ["BasePath"] = "MyLibrary",
+                            ["ContentRoot"] = @"c:/nuget/MyLibrary/razorContent"
+                        }),
+                        // Comparisons are case insensitive
+                        CreateItem(@"wwwroot\site.css", new Dictionary<string,string>{
+                            ["BasePath"] = "MyLIBRARY",
+                            ["ContentRoot"] = @"c:/nuget/MyLIBRARY/razorContent"
                         }),
                     },
                     TargetManifestPath = file
