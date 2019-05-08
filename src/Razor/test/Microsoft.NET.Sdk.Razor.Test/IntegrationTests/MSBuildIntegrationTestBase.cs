@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public abstract class MSBuildIntegrationTestBase
     {
-        private static readonly string LocalNugetPackagesCacheTempPath =
-            Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        internal static readonly string LocalNugetPackagesCacheTempPath =
+            Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())+ Path.DirectorySeparatorChar;
 
         private static readonly AsyncLocal<ProjectDirectory> _project = new AsyncLocal<ProjectDirectory>();
         private static readonly AsyncLocal<string> _projectTfm = new AsyncLocal<string>();
@@ -94,8 +94,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 $"/p:MicrosoftNETCoreApp30PackageVersion={BuildVariables.MicrosoftNETCoreApp30PackageVersion}",
 
                 // Additional restore sources for projects that require built packages
-                $"/p:RuntimeAdditionalRestoreSources={additionalRestoreSources}"
+                $"/p:RuntimeAdditionalRestoreSources={additionalRestoreSources}",
             };
+
+            if (UseLocalPackageCache)
+            {
+                if (!Directory.Exists(LocalNugetPackagesCacheTempPath))
+                {
+                    Directory.CreateDirectory(LocalNugetPackagesCacheTempPath);
+                }
+            }
 
             if (!suppressBuildServer)
             {

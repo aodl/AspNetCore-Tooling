@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -26,6 +27,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithPackageAndP2PReference")]
         public async Task Build_GeneratesAspNetCoreStaticAssetsManifest_Success_CreatesManifest()
         {
+            // For some reason when using a custom package cache the imports won't get added on
+            // the initial restore, so we restore the packages ourselves.
+            await DotnetMSBuild("Restore");
+
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
@@ -48,6 +53,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_DoesNotEmbedManifestWhen_NoStaticResourcesAvailable()
         {
+            // For some reason when using a custom package cache the imports won't get added on
+            // the initial restore, so we restore the packages ourselves.
+            await DotnetMSBuild("Restore");
+
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
@@ -64,6 +73,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithPackageAndP2PReference")]
         public async Task Clean_Success_RemovesManifestAndCache()
         {
+            // For some reason when using a custom package cache the imports won't get added on
+            // the initial restore, so we restore the packages ourselves.
+            await DotnetMSBuild("Restore");
+
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
@@ -86,6 +99,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public async Task Rebuild_Success_RecreatesManifestAndCache()
         {
             // Arrange
+            // For some reason when using a custom package cache the imports won't get added on
+            // the initial restore, so we restore the packages ourselves.
+            await DotnetMSBuild("Restore");
+
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
@@ -119,6 +136,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 var thumbprint = GetThumbPrint(file);
                 Assert.NotEqual(thumbPrints[file], thumbprint);
             }
+
+            var path = Assert.FileExists(result, OutputPath, "AppWithPackageAndP2PReference.dll");
+            var assembly = Assert.ContainsEmbeddedResource(path, "Microsoft.AspNetCore.StaticAssets.xml");
+            using (var reader = new StreamReader(assembly))
+            {
+                var data = XDocument.Parse(reader.ReadToEnd());
+                Assert.Equal("AspNetCoreStaticAssets", data.Root.Name);
+                Assert.Equal(2, data.Root.Descendants().Count());
+            }
         }
 
         [Fact]
@@ -126,6 +152,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public async Task GenerateAspNetCoreStaticAssetsManifest_IncrementalBuild_ReusesManifest()
         {
             // Arrange
+            // For some reason when using a custom package cache the imports won't get added on
+            // the initial restore, so we restore the packages ourselves.
+            await DotnetMSBuild("Restore");
+
             var result = await DotnetMSBuild("GenerateAspNetCoreStaticAssetsManifest");
 
             Assert.BuildPassed(result);
@@ -182,7 +212,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 var psi = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    FileName = DotNetMuxer.MuxerPathOrDefault(),
                     Arguments = "pack",
                     WorkingDirectory = project
                 };

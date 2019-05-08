@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <RuntimeAdditionalRestoreSources Condition="'$(RuntimeAdditionalRestoreSources)' == ''">$(MSBuildThisFileDirectory)..\TestPackageRestoreSource\<RuntimeAdditionalRestoreSources>
+    <RuntimeAdditionalRestoreSources Condition="'$(RuntimeAdditionalRestoreSources)' == ''">$(MSBuildThisFileDirectory)..\TestPackageRestoreSource\</RuntimeAdditionalRestoreSources>
     <RestoreSources>
       $(RestoreSources);
       $(RuntimeAdditionalRestoreSources)

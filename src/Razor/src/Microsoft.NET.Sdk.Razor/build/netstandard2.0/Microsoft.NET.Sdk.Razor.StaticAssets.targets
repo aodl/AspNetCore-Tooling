@@ -1,4 +1,26 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Razor.StaticAssets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+
 <Project ToolsVersion="14.0">
+
+  <!-- Targets that support static content scenarios in ASP.NET Core.
+       The main targets are:
+       * GenerateAspNetCoreStaticAssetsManifest: Creates a manifest file to use in development with
+         the paths to all the references packages and projects content roots.
+       * ResolveAspNetCoreStaticAssetsInputs: Collects all the static assets from different sources
+         * Current project.
+         * Referenced project.
+         * Referenced packages.
+  -->
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateAspNetCoreStaticAssetsManifest"
@@ -8,21 +30,29 @@
   <PropertyGroup>
     <GenerateAspNetCoreStaticAssetsManifestDependsOn>
       ResolveAspNetCoreStaticAssetsInputs;
-      PrepareForGenerateAspNetCoreStaticAssetsManifest;
+      _ResolveAspNetCoreStaticAssetsConfiguration;
       _CreateAspNetCoreStaticAssetInputsCacheFile
     </GenerateAspNetCoreStaticAssetsManifestDependsOn>
-    <ResolveAspNetCoreStaticAssetsInputsDependsOn></ResolveAspNetCoreStaticAssetsInputsDependsOn>
+    <ResolveAspNetCoreStaticAssetsInputsDependsOn>_ResolveAspNetCoreStaticAssetsConfiguration</ResolveAspNetCoreStaticAssetsInputsDependsOn>
   </PropertyGroup>
 
-  <Target Name="PrepareForGenerateAspNetCoreStaticAssetsManifest">
+  <Target Name="_ResolveAspNetCoreStaticAssetsConfiguration">
   
     <PropertyGroup>
       <_GeneratedAspnetCoreStaticAssetInputsCacheFile>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticAssets.cache</_GeneratedAspnetCoreStaticAssetInputsCacheFile>
       <_GeneratedAspNetCoreStaticAssetsDevelopmentManifest>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticAssets.xml</_GeneratedAspNetCoreStaticAssetsDevelopmentManifest>
     </PropertyGroup>
 
+  </Target>
+
+  <Target 
+    Name="_CreateAspNetCoreStaticAssetInputsCacheFile"
+    DependsOnTargets="ResolveAspNetCoreStaticAssetsInputs;_ResolveAspNetCoreStaticAssetsConfiguration">
+    
     <ItemGroup>
-      <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
+      <!-- 
+      This is the list of inputs that will be used for generating the manifest used during development. 
+      -->
       <_ExternalAspNetCoreStaticAssetManifestEntry
         Include="%(AspNetCoreStaticAsset.Identity)"
         Condition="'%(SourceType)' != ''">
@@ -31,12 +61,6 @@
       </_ExternalAspNetCoreStaticAssetManifestEntry>
     </ItemGroup>
 
-  </Target>
-
-  <Target 
-    Name="_CreateAspNetCoreStaticAssetInputsCacheFile"
-    DependsOnTargets="ResolveAspNetCoreStaticAssetsInputs;PrepareForGenerateAspNetCoreStaticAssetsManifest">
-    
     <Hash ItemsToHash="@(_ExternalAspNetCoreStaticAssetManifestEntry)">
       <Output TaskParameter="HashResult" PropertyName="_AspNetCoreStaticAssetCacheHash" />
     </Hash>
@@ -85,9 +109,6 @@
       <FileWrites Include="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)" />
     </ItemGroup>
 
-  </Target>
-
-  <Target Name="EmbeddAspNetCoreStaticAssetsManifest">
   </Target>
 
   <!-- This target collects all the AspNetCoreStaticAsset from different sources:
