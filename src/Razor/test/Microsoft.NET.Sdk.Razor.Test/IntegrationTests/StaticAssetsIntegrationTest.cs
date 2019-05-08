@@ -11,16 +11,20 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public class StaticAssetsIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>, IClassFixture<PackageTestProjectsFixture>
     {
-        public StaticAssetsIntegrationTest(BuildServerTestFixture buildServer, PackageTestProjectsFixture packageTestProjects)
+        public StaticAssetsIntegrationTest(
+            BuildServerTestFixture buildServer,
+            PackageTestProjectsFixture packageTestProjects,
+            ITestOutputHelper output)
             : base(buildServer)
         {
             UseLocalPackageCache = true;
-            packageTestProjects.Pack();
+            packageTestProjects.Pack(output);
         }
 
         [Fact]
@@ -196,7 +200,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     {
         private bool _packed;
 
-        internal void Pack()
+        internal void Pack(ITestOutputHelper output)
         {
             if (_packed)
             {
@@ -214,13 +218,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 {
                     FileName = DotNetMuxer.MuxerPathOrDefault(),
                     Arguments = "pack",
-                    WorkingDirectory = project
+                    WorkingDirectory = project,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 };
                 var process = Process.Start(psi);
 
                 // Wait for 10 seconds or fail. If we take longer
                 // it likely means we are adding unexpected dependencies.
                 Assert.True(process.WaitForExit(10 * 1000));
+                output.WriteLine(process.StandardOutput.ReadToEnd());
                 Assert.Equal(0, process.ExitCode);
             }
 
