@@ -222,7 +222,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 var psi = new ProcessStartInfo
                 {
                     FileName = DotNetMuxer.MuxerPathOrDefault(),
-                    Arguments = "pack",
+#if DEBUG
+                    Arguments = "pack -c Debug",
+#else
+                    Arguments = "pack -c Release",
+#endif
                     WorkingDirectory = project,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
