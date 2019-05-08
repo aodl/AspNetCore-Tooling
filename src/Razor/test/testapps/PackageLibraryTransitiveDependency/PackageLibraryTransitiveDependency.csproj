@@ -15,6 +15,7 @@
     <Company>Microsoft</Company>
     <Description>PackageLibraryTransitiveDependency Description</Description>
     <PackageOutputPath>$(MSBuildThisFileDirectory)..\TestPackageRestoreSource</PackageOutputPath>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">
