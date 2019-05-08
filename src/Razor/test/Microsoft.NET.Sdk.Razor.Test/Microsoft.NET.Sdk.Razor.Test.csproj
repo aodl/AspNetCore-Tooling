@@ -29,6 +29,24 @@
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Testing.ProjectToPack</_Parameter1>
+      <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\PackageLibraryDirectDependency</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Testing.ProjectToPack</_Parameter1>
+      <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\PackageLibraryTransitiveDependency</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Testing.AdditionalRestoreSources</_Parameter1>
+      <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\TestPackageRestoreSource</_Parameter2>
+    </AssemblyAttribute>
+
+  </ItemGroup>
+
   <!-- The test projects rely on these binaries being available -->
   <ItemGroup>
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
@@ -90,21 +108,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
   </Target>
 
-  <Target Name="RestoreTestProjects" BeforeTargets="Build" AfterTargets="Restore" DependsOnTargets="EnsureFreshTestPackages">
+  <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build">
     <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" />
   </Target>
 
-
-  <Target Name="EnsureFreshTestPackages">
-    
-    <ItemGroup>
-      <TestPackageDirectoriesToRemove Include="$(NuGetPackageRoot)packagelibrarydirectdependency" />
-      <TestPackageDirectoriesToRemove Include="$(NuGetPackageRoot)packagelibrarytransitivedependency" />
-    </ItemGroup>
-    <Message Importance="high" Text="@(TestPackageDirectoriesToRemove)" />
-    
-    <RemoveDir Directories="@(TestPackageDirectoriesToRemove)" Condition="Exists('%(FullPath)')" />
-
-    <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="CreateTestPackages" />
-  </Target>
 </Project>

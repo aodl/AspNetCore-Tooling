@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +15,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public abstract class MSBuildIntegrationTestBase
     {
+        private static readonly string LocalNugetPackagesCacheTempPath =
+            Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
         private static readonly AsyncLocal<ProjectDirectory> _project = new AsyncLocal<ProjectDirectory>();
         private static readonly AsyncLocal<string> _projectTfm = new AsyncLocal<string>();
 
@@ -42,6 +47,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             set { _project.Value = value; }
         }
 
+        public bool UseLocalPackageCache { get; set; }
+
         protected string RazorIntermediateOutputPath => Path.Combine(IntermediateOutputPath, "Razor");
 
         protected string RazorComponentIntermediateOutputPath => Path.Combine(IntermediateOutputPath, "RazorDeclaration");
@@ -64,16 +71,30 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             bool runRestoreBeforeBuildOrPublish = true)
         {
             var timeout = suppressTimeout ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
+
+            var additionalRestoreSources = string.Join(
+                ',',
+                typeof(PackageTestProjectsFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .Where(a => a.Key == "Testing.AdditionalRestoreSources")
+                    .Select(a => a.Value)
+                    .ToArray());
+
             var buildArgumentList = new List<string>
             {
                 // Disable node-reuse. We don't want msbuild processes to stick around
                 // once the test is completed.
                 "/nr:false",
 
+                // Always generate a bin log for debugging purposes
+                "/bl",
+
                 // Let the test app know it is running as part of a test.
                 "/p:RunningAsTest=true",
 
                 $"/p:MicrosoftNETCoreApp30PackageVersion={BuildVariables.MicrosoftNETCoreApp30PackageVersion}",
+
+                // Additional restore sources for projects that require built packages
+                $"/p:RuntimeAdditionalRestoreSources={additionalRestoreSources}"
             };
 
             if (!suppressBuildServer)
@@ -110,7 +131,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Project,
                 buildArguments,
                 timeout,
-                msBuildProcessKind);
+                msBuildProcessKind,
+                UseLocalPackageCache ? LocalNugetPackagesCacheTempPath : null);
         }
 
         internal void AddProjectFileContent(string content)

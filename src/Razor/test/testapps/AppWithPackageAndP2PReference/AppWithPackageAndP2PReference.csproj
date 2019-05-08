@@ -6,6 +6,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RestoreSources>
+      $(RestoreSources);
+      $(RuntimeAdditionalRestoreSources)
+    </RestoreSources>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,12 +21,6 @@
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">
     <!-- We don't want to run build server when not running as tests. -->
     <UseRazorBuildServer>false</UseRazorBuildServer>
-
-    <RestoreSources>
-      $(RestoreSources);
-      $(MSBuildThisFileDirectory)..\TestPackageRestoreSource\
-    </RestoreSources>
-
   </PropertyGroup>
 
   <!-- Test Placeholder -->

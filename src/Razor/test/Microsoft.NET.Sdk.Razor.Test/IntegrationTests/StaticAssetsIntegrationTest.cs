@@ -1,20 +1,25 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class StaticAssetsIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
+    public class StaticAssetsIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>, IClassFixture<PackageTestProjectsFixture>
     {
-        public StaticAssetsIntegrationTest(BuildServerTestFixture buildServer)
+        public StaticAssetsIntegrationTest(BuildServerTestFixture buildServer, PackageTestProjectsFixture packageTestProjects)
             : base(buildServer)
         {
+            UseLocalPackageCache = true;
+            packageTestProjects.Pack();
         }
 
         [Fact]
@@ -154,6 +159,42 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 var thumbprint = GetThumbPrint(file);
                 Assert.Equal(thumbPrints[file], thumbprint);
             }
+        }
+    }
+
+    public class PackageTestProjectsFixture
+    {
+        private bool _packed;
+
+        internal void Pack()
+        {
+            if (_packed)
+            {
+                return;
+            }
+
+            var projectsToPack = typeof(PackageTestProjectsFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Where(a => a.Key == "Testing.ProjectToPack")
+                .Select(a => a.Value)
+                .ToArray();
+
+            foreach (var project in projectsToPack)
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = "pack",
+                    WorkingDirectory = project
+                };
+                var process = Process.Start(psi);
+
+                // Wait for 10 seconds or fail. If we take longer
+                // it likely means we are adding unexpected dependencies.
+                Assert.True(process.WaitForExit(10 * 1000));
+                Assert.Equal(0, process.ExitCode);
+            }
+
+            _packed = true;
         }
     }
 }
