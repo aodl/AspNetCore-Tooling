@@ -1,11 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
@@ -28,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 BuildEngine = buildEngine.Object,
                 ContentRootDefinitions = new TaskItem[]{
-                    CreateItem(@"wwwroot\sample.js", new Dictionary<string,string>{
+                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
                         ["ContentRoot"] = "/"
                     })
                 }
@@ -40,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // Assert
             Assert.False(result);
             var message = Assert.Single(errorMessages);
-            Assert.Equal(@"Missing required metadata 'BasePath' for 'wwwroot\sample.js'.", message);
+            Assert.Equal($"Missing required metadata 'BasePath' for '{Path.Combine("wwwroot", "sample.js")}'.", message);
         }
 
         [Fact]
@@ -56,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 BuildEngine = buildEngine.Object,
                 ContentRootDefinitions = new TaskItem[]{
-                    CreateItem(@"wwwroot\sample.js", new Dictionary<string,string>{
+                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
                         ["BasePath"] = "MyLibrary"
                     })
                 }
@@ -68,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // Assert
             Assert.False(result);
             var message = Assert.Single(errorMessages);
-            Assert.Equal(@"Missing required metadata 'ContentRoot' for 'wwwroot\sample.js'.", message);
+            Assert.Equal($"Missing required metadata 'ContentRoot' for '{Path.Combine("wwwroot", "sample.js")}'.", message);
         }
 
         [Fact]
@@ -84,13 +81,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 BuildEngine = buildEngine.Object,
                 ContentRootDefinitions = new TaskItem[]{
-                    CreateItem(@"wwwroot\sample.js", new Dictionary<string,string>{
+                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
                         ["BasePath"] = "MyLibrary",
-                        ["ContentRoot"] = @"c:\nuget\MyLibrary"
+                        ["ContentRoot"] = Path.Combine("nuget","MyLibrary")
                     }),
-                    CreateItem(@"wwwroot\otherLib.js", new Dictionary<string,string>{
+                    CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>{
                         ["BasePath"] = "MyLibrary",
-                        ["ContentRoot"] = @"c:\nuget\MyOtherLibrary"
+                        ["ContentRoot"] = Path.Combine("nuget", "MyOtherLibrary")
                     })
                 }
             };
@@ -102,7 +99,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             Assert.False(result);
             var message = Assert.Single(errorMessages);
             Assert.Equal(
-                @"Duplicate base paths 'MyLibrary' for content root paths 'c:\nuget\MyOtherLibrary' and 'c:\nuget\MyLibrary'. ('wwwroot\otherLib.js', 'wwwroot\sample.js')",
+                $"Duplicate base paths 'MyLibrary' for content root paths '{Path.Combine("nuget", "MyOtherLibrary")}' and '{Path.Combine("nuget", "MyLibrary")}'. " +
+                $"('{Path.Combine("wwwroot", "otherLib.js")}', '{Path.Combine("wwwroot", "sample.js")}')",
                 message);
         }
 
@@ -119,13 +117,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 BuildEngine = buildEngine.Object,
                 ContentRootDefinitions = new TaskItem[]{
-                    CreateItem(@"wwwroot\sample.js", new Dictionary<string,string>{
+                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
                         ["BasePath"] = "MyLibrary",
-                        ["ContentRoot"] = @"./MyLibrary"
+                        ["ContentRoot"] = Path.Combine(".", "MyLibrary")
                     }),
-                    CreateItem(@"wwwroot\otherLib.js", new Dictionary<string,string>{
+                    CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>{
                         ["BasePath"] = "MyOtherLibrary",
-                        ["ContentRoot"] = @"./MyLibrary"
+                        ["ContentRoot"] = Path.Combine(".", "MyLibrary")
                     })
                 }
             };
@@ -137,7 +135,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             Assert.False(result);
             var message = Assert.Single(errorMessages);
             Assert.Equal(
-                @"Duplicate content root paths './MyLibrary' for base paths 'MyOtherLibrary' and 'MyLibrary' ('wwwroot\otherLib.js', 'wwwroot\sample.js')",
+                $"Duplicate content root paths '{Path.Combine(".", "MyLibrary")}' for base paths 'MyOtherLibrary' and 'MyLibrary' " +
+                $"('{Path.Combine("wwwroot", "otherLib.js")}', '{Path.Combine("wwwroot", "sample.js")}')",
                 message);
         }
 
@@ -181,8 +180,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             // Arrange
             var file = Path.GetTempFileName();
-            var expectedDocument = @"<AspNetCoreStaticAssets Version=""1.0"">
-  <ContentRoot BasePath=""MyLibrary"" Path=""c:/nuget/MyLibrary/razorContent"" />
+            var expectedDocument = $@"<AspNetCoreStaticAssets Version=""1.0"">
+  <ContentRoot BasePath=""MyLibrary"" Path=""{Path.Combine(".", "nuget", "MyLibrary", "razorContent")}"" />
 </AspNetCoreStaticAssets>";
 
             try
@@ -193,9 +192,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 {
                     BuildEngine = buildEngine.Object,
                     ContentRootDefinitions = new TaskItem[] {
-                        CreateItem(@"wwwroot\sample.js", new Dictionary<string,string>{
+                        CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
                             ["BasePath"] = "MyLibrary",
-                            ["ContentRoot"] = @"c:/nuget/MyLibrary/razorContent"
+                            ["ContentRoot"] = Path.Combine(".", "nuget", "MyLibrary", "razorContent")
                         }),
                     },
                     TargetManifestPath = file
@@ -223,8 +222,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             // Arrange
             var file = Path.GetTempFileName();
-            var expectedDocument = @"<AspNetCoreStaticAssets Version=""1.0"">
-  <ContentRoot BasePath=""MyLibrary"" Path=""c:/nuget/MyLibrary/razorContent"" />
+            var expectedDocument = $@"<AspNetCoreStaticAssets Version=""1.0"">
+  <ContentRoot BasePath=""MyLibrary"" Path=""{Path.Combine(".", "nuget", "MyLibrary", "razorContent")}"" />
 </AspNetCoreStaticAssets>";
 
             try
@@ -235,14 +234,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 {
                     BuildEngine = buildEngine.Object,
                     ContentRootDefinitions = new TaskItem[] {
-                        CreateItem(@"wwwroot\sample.js", new Dictionary<string,string>{
+                        CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
                             ["BasePath"] = "MyLibrary",
-                            ["ContentRoot"] = @"c:/nuget/MyLibrary/razorContent"
+                            ["ContentRoot"] = Path.Combine(".", "nuget", "MyLibrary", "razorContent")
                         }),
                         // Comparisons are case insensitive
-                        CreateItem(@"wwwroot\site.css", new Dictionary<string,string>{
+                        CreateItem(Path.Combine("wwwroot, site.css"), new Dictionary<string,string>{
                             ["BasePath"] = "MyLIBRARY",
-                            ["ContentRoot"] = @"c:/nuget/MyLIBRARY/razorContent"
+                            ["ContentRoot"] = Path.Combine(".", "nuget", "MyLIBRARY", "razorContent")
                         }),
                     },
                     TargetManifestPath = file
@@ -267,10 +266,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         private static TaskItem CreateItem(
             string spec,
-            IDictionary<string,string> metadata)
+            IDictionary<string, string> metadata)
         {
             var result = new TaskItem(spec);
-            foreach (var (key,value) in metadata)
+            foreach (var (key, value) in metadata)
             {
                 result.SetMetadata(key, value);
             }
