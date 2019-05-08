@@ -18,9 +18,11 @@
   <ItemGroup>
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(BuildVariablesGeneratedFile)" Condition="Exists('$(BuildVariablesGeneratedFile)')" />
+    <Compile Include="..\..\src\Microsoft.NET.Sdk.Razor\GenerateAspNetCoreStaticAssetsManifest.cs" Link="TasksSource\GenerateAspNetCoreStaticAssetsManifest.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
@@ -40,22 +42,17 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="TasksSource\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <MSBuildLocationFileOutput>$(IntermediateOutputPath)BuildVariables.generated.cs</MSBuildLocationFileOutput>
   </PropertyGroup>
 
-  <Target 
-    Name="GenerateMSBuildLocationFile"
-    Condition="'$(TargetFramework)'!=''"
-    AfterTargets="BeforeBuild"
-    Inputs="$(MSBuildAllProjects)"
-    Outputs="$(MSBuildLocationFileOutput)">
+  <Target Name="GenerateMSBuildLocationFile" Condition="'$(TargetFramework)'!=''" AfterTargets="BeforeBuild" Inputs="$(MSBuildAllProjects)" Outputs="$(MSBuildLocationFileOutput)">
 
-    <Exec
-      Condition="'$(OS)' == 'Windows_NT'"
-      Command='"$(NuGetPackageRoot)vswhere\$(VSWhereVersion)\tools\vswhere.exe" -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild'
-      ConsoleToMsBuild="true"
-      StandardErrorImportance="high">
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="&quot;$(NuGetPackageRoot)vswhere\$(VSWhereVersion)\tools\vswhere.exe&quot; -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild" ConsoleToMsBuild="true" StandardErrorImportance="high">
       <Output TaskParameter="ConsoleOutput" PropertyName="_VSInstallDir" />
     </Exec>
     <Error Condition="'$(OS)' == 'Windows_NT' and '$(_VSInstallDir)'==''" Text="Visual Studio not found on Windows." />
@@ -105,9 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     </ItemGroup>
     <Message Importance="high" Text="@(TestPackageDirectoriesToRemove)" />
     
-    <RemoveDir 
-      Directories="@(TestPackageDirectoriesToRemove)"
-      Condition="Exists('%(FullPath)')" />
+    <RemoveDir Directories="@(TestPackageDirectoriesToRemove)" Condition="Exists('%(FullPath)')" />
 
     <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="CreateTestPackages" />
   </Target>

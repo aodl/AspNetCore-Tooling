@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var value = item.GetMetadata(metadataName);
             if (string.IsNullOrEmpty(value))
             {
-                Log.LogError($"Missing required metadata '{metadataName}' for '{item.ItemSpec}.");
+                Log.LogError($"Missing required metadata '{metadataName}' for '{item.ItemSpec}'.");
                 return false;
             }
     

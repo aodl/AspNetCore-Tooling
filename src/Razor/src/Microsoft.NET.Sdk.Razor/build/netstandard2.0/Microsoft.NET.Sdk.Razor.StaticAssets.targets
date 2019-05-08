@@ -106,7 +106,7 @@
            
            TODO: Investigate if we need to do something more sophisticated here.
       -->
-      <_SafeBasePath>$(PackageId).Replace('.','')</_SafeBasePath>
+      <_SafeBasePath>$(PackageId.Replace('.',''))</_SafeBasePath>
     </PropertyGroup>
 
     <!-- AspNetCoreStaticAsset from the current project -->
