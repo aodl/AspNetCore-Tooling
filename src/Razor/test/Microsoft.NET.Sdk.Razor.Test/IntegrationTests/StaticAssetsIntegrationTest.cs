@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 };
                 process.EnableRaisingEvents = true;
 
-                await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(10)), tcs.Task);
+                await Task.WhenAny(Task.Delay(TimeSpan.FromMinutes(2)), tcs.Task);
 
                 // Wait for 10 seconds or fail. If we take longer
                 // it likely means we are adding unexpected dependencies.
