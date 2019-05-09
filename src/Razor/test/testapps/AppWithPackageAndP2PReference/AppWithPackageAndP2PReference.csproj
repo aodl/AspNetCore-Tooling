@@ -27,7 +27,7 @@
   <!-- Test Placeholder -->
 
   <ItemGroup>
-    <PackageReference Include="PackageLibrarydirectDependency" Version="1.0.0" />
+    <PackageReference Include="PackageLibraryDirectDependency" Version="1.0.0" />
   </ItemGroup>
 
     <PropertyGroup Condition="'$(BinariesRoot)'==''">

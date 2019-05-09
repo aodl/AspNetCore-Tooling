@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             set { _project.Value = value; }
         }
 
-        // Wether to use a local cache or not to prevent polluting the global cache
+        // Whether to use a local cache or not to prevent polluting the global cache
         // with test packages.
         public bool UseLocalPackageCache { get; set; }
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 if (!Directory.Exists(LocalNugetPackagesCacheTempPath))
                 {
-                    // The local cache folder needs to exist so that nuget does not complain
+                    // The local cache folder needs to exist so that nuget 
                     Directory.CreateDirectory(LocalNugetPackagesCacheTempPath);
                 }
             }

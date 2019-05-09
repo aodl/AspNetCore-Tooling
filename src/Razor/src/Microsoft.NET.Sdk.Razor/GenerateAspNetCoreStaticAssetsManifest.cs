@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 {
     public class GenerateAspNetCoreStaticAssetsManifest : Task
     {
-        private const string ContentRoot = nameof(ContentRoot);
-        private const string BasePath = nameof(BasePath);
-        
+        private const string ContentRoot = "ContentRoot";
+        private const string BasePath = "BasePath";
+
         [Required]
         public string TargetManifestPath { get; set; }
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public override bool Execute()
         {
-            if(!ValidateArguments())
+            if (!ValidateArguments())
             {
                 return false;
             }
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 Async = true
             };
 
-            using (var xmlWriter = GetXmlWritter(settings))
+            using (var xmlWriter = GetXmlWriter(settings))
             {
                 document.WriteTo(xmlWriter);
             }
@@ -69,13 +69,18 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var contentRootDefinition = ContentRootDefinitions[i];
                 var basePath = contentRootDefinition.GetMetadata(BasePath);
                 var contentRoot = contentRootDefinition.GetMetadata(ContentRoot);
-                
+
+                // basePath is meant to be a prefix for the files under contentRoot. MSbuild
+                // normalizes '\' according to the OS, but this is going to be part of the url
+                // so it needs to always be '/'.
+                var normalizedBasePath = basePath.Replace("\\", "/");
+
                 // At this point we already know that there are no elements with different base paths and same content roots
                 // or viceversa. Here we simply skip additional items that have the same base path and same content root.
-                if (!nodes.Exists(e => e.Attribute(BasePath).Value.Equals(basePath, StringComparison.OrdinalIgnoreCase)))
+                if (!nodes.Exists(e => e.Attribute(BasePath).Value.Equals(normalizedBasePath, StringComparison.OrdinalIgnoreCase)))
                 {
                     nodes.Add(new XElement("ContentRoot",
-                        new XAttribute("BasePath", basePath),
+                        new XAttribute("BasePath", normalizedBasePath),
                         new XAttribute("Path", contentRoot)));
                 }
             }
@@ -83,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return nodes;
         }
 
-        private XmlWriter GetXmlWritter(XmlWriterSettings settings)
+        private XmlWriter GetXmlWriter(XmlWriterSettings settings)
         {
             var fileStream = new FileStream(TargetManifestPath, FileMode.Create);
             return XmlWriter.Create(fileStream, settings);
@@ -107,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // duplicates, so here we skip elements for which we are already tracking an element with the same
             // content root path and same base path.
 
-            // Case-sensitivity depends on the underlyin OS so we are not going to do anything to enforce it here.
+            // Case-sensitivity depends on the underlying OS so we are not going to do anything to enforce it here.
             // Any two items that match base path and content root in a case-insensitive way won't produce an error.
             // Any other two items will produce an error even if there is only a casing difference between either the
             // base paths or the content roots.
@@ -119,8 +124,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var contentRootDefinition = ContentRootDefinitions[i];
                 var basePath = contentRootDefinition.GetMetadata(BasePath);
                 var contentRoot = contentRootDefinition.GetMetadata(ContentRoot);
-                
-                if(basePaths.TryGetValue(basePath, out var existingBasePath))
+
+                if (basePaths.TryGetValue(basePath, out var existingBasePath))
                 {
                     var existingBasePathContentRoot = existingBasePath.GetMetadata(ContentRoot);
                     if (!string.Equals(contentRoot, existingBasePathContentRoot, StringComparison.OrdinalIgnoreCase))
@@ -139,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 }
                 else
                 {
-                    if(contentRootPaths.TryGetValue(contentRoot, out var existingContentRoot))
+                    if (contentRootPaths.TryGetValue(contentRoot, out var existingContentRoot))
                     {
                         // Case:
                         // Item1: /_content/Library1, /package/aspnetContent
@@ -172,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 Log.LogError($"Missing required metadata '{metadataName}' for '{item.ItemSpec}'.");
                 return false;
             }
-    
+
             return true;
         }
     }

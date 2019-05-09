@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class StaticAssetsIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>, IClassFixture<PackageTestProjectsFixture>
+    public class StaticAssetsIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>, IClassFixture<PackageTestProjectsFixture>, IAsyncLifetime
     {
         public StaticAssetsIntegrationTest(
             BuildServerTestFixture buildServer,
@@ -24,8 +24,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             : base(buildServer)
         {
             UseLocalPackageCache = true;
-            packageTestProjects.Pack(output);
+            PackageTestProjects = packageTestProjects;
+            Output = output;
         }
+
+        public PackageTestProjectsFixture PackageTestProjects { get; private set; }
+
+        public ITestOutputHelper Output { get; private set; }
 
         [Fact]
         [InitializeTestProject("AppWithPackageAndP2PReference")]
@@ -34,6 +39,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // For some reason when using a custom package cache the imports won't get added on
             // the initial restore, so we restore the packages ourselves.
             await DotnetMSBuild("Restore");
+
+            var expectedManifest = GetExpectedManifest();
 
             var result = await DotnetMSBuild("Build");
 
@@ -47,10 +54,31 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var assembly = Assert.ContainsEmbeddedResource(path, "Microsoft.AspNetCore.StaticAssets.xml");
             using (var reader = new StreamReader(assembly))
             {
-                var data = XDocument.Parse(reader.ReadToEnd());
-                Assert.Equal("AspNetCoreStaticAssets", data.Root.Name);
-                Assert.Equal(2, data.Root.Descendants().Count());
+                var data = await reader.ReadToEndAsync();
+                Assert.Equal(expectedManifest, data);
             }
+        }
+
+        private string GetExpectedManifest()
+        {
+            var projectNames = PackageTestProjectsFixture.GetProjectsToPack()
+                .Select(p => Path.GetFileNameWithoutExtension(p).ToLowerInvariant())
+                .OrderByDescending(p => p.Length)
+                .ToArray();
+
+            var restorePath = LocalNugetPackagesCacheTempPath;
+            var projects = projectNames.Select(p =>
+                Path.Combine(
+                    restorePath,
+                    p,
+                    "1.0.0",
+                    p.Contains("transitive", StringComparison.OrdinalIgnoreCase) ? "buildTransitive" : "build", "..", "razorContent") + Path.DirectorySeparatorChar)
+                .ToArray();
+
+            return $@"<AspNetCoreStaticAssets Version=""1.0"">
+  <ContentRoot BasePath=""_content/PackageLibraryTransitiveDependency"" Path=""{projects[0]}"" />
+  <ContentRoot BasePath=""_content/PackageLibraryDirectDependency"" Path=""{projects[1]}"" />
+</AspNetCoreStaticAssets>";
         }
 
         [Fact]
@@ -145,9 +173,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var assembly = Assert.ContainsEmbeddedResource(path, "Microsoft.AspNetCore.StaticAssets.xml");
             using (var reader = new StreamReader(assembly))
             {
-                var data = XDocument.Parse(reader.ReadToEnd());
-                Assert.Equal("AspNetCoreStaticAssets", data.Root.Name);
-                Assert.Equal(2, data.Root.Descendants().Count());
+                var data = reader.ReadToEnd();
+                Assert.Equal(GetExpectedManifest(), data);
             }
         }
 
@@ -194,23 +221,30 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.Equal(thumbPrints[file], thumbprint);
             }
         }
+
+        public Task InitializeAsync()
+        {
+            return PackageTestProjects.PackAsync(Output);
+        }
+
+        public Task DisposeAsync()
+        {
+            return Task.CompletedTask;
+        }
     }
 
     public class PackageTestProjectsFixture
     {
         private bool _packed;
 
-        internal void Pack(ITestOutputHelper output)
+        internal async Task PackAsync(ITestOutputHelper output)
         {
             if (_packed)
             {
                 return;
             }
 
-            var projectsToPack = typeof(PackageTestProjectsFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Where(a => a.Key == "Testing.ProjectToPack")
-                .Select(a => a.Value)
-                .ToArray();
+            var projectsToPack = GetProjectsToPack();
 
             foreach (var project in projectsToPack)
             {
@@ -231,16 +265,32 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 };
+                var tcs = new TaskCompletionSource<Process>();
                 var process = Process.Start(psi);
+                process.Exited += (s, a) =>
+                {
+                    tcs.SetResult(process);
+                };
+                process.EnableRaisingEvents = true;
+
+                await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(10)), tcs.Task);
 
                 // Wait for 10 seconds or fail. If we take longer
                 // it likely means we are adding unexpected dependencies.
-                Assert.True(process.WaitForExit(180 * 1000));
+                Assert.True(process.HasExited);
                 output.WriteLine(process.StandardOutput.ReadToEnd());
                 Assert.Equal(0, process.ExitCode);
             }
 
             _packed = true;
+        }
+
+        public static string[] GetProjectsToPack()
+        {
+            return typeof(PackageTestProjectsFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Where(a => a.Key == "Testing.ProjectToPack")
+                .Select(a => a.Value)
+                .ToArray();
         }
     }
 }

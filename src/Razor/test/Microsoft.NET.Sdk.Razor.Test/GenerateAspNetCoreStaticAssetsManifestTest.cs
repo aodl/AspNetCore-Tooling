@@ -24,8 +24,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var task = new GenerateAspNetCoreStaticAssetsManifest
             {
                 BuildEngine = buildEngine.Object,
-                ContentRootDefinitions = new TaskItem[]{
-                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
+                ContentRootDefinitions = new TaskItem[]
+                {
+                    CreateItem(Path.Combine("wwwroot", "sample.js"), new Dictionary<string,string>
+                    {
                         ["ContentRoot"] = "/"
                     })
                 }
@@ -52,8 +54,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var task = new GenerateAspNetCoreStaticAssetsManifest
             {
                 BuildEngine = buildEngine.Object,
-                ContentRootDefinitions = new TaskItem[]{
-                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
+                ContentRootDefinitions = new TaskItem[]
+                {
+                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
+                    {
                         ["BasePath"] = "MyLibrary"
                     })
                 }
@@ -80,12 +84,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var task = new GenerateAspNetCoreStaticAssetsManifest
             {
                 BuildEngine = buildEngine.Object,
-                ContentRootDefinitions = new TaskItem[]{
-                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
+                ContentRootDefinitions = new TaskItem[]
+                {
+                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
+                    {
                         ["BasePath"] = "MyLibrary",
                         ["ContentRoot"] = Path.Combine("nuget","MyLibrary")
                     }),
-                    CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>{
+                    CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>
+                    {
                         ["BasePath"] = "MyLibrary",
                         ["ContentRoot"] = Path.Combine("nuget", "MyOtherLibrary")
                     })
@@ -116,12 +123,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var task = new GenerateAspNetCoreStaticAssetsManifest
             {
                 BuildEngine = buildEngine.Object,
-                ContentRootDefinitions = new TaskItem[]{
-                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
+                ContentRootDefinitions = new TaskItem[]
+                {
+                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
+                    {
                         ["BasePath"] = "MyLibrary",
                         ["ContentRoot"] = Path.Combine(".", "MyLibrary")
                     }),
-                    CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>{
+                    CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>
+                    {
                         ["BasePath"] = "MyOtherLibrary",
                         ["ContentRoot"] = Path.Combine(".", "MyLibrary")
                     })
@@ -191,8 +201,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var task = new GenerateAspNetCoreStaticAssetsManifest
                 {
                     BuildEngine = buildEngine.Object,
-                    ContentRootDefinitions = new TaskItem[] {
-                        CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
+                    ContentRootDefinitions = new TaskItem[]
+                    {
+                        CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
+                        {
                             ["BasePath"] = "MyLibrary",
                             ["ContentRoot"] = Path.Combine(".", "nuget", "MyLibrary", "razorContent")
                         }),
@@ -223,7 +235,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // Arrange
             var file = Path.GetTempFileName();
             var expectedDocument = $@"<AspNetCoreStaticAssets Version=""1.0"">
-  <ContentRoot BasePath=""MyLibrary"" Path=""{Path.Combine(".", "nuget", "MyLibrary", "razorContent")}"" />
+  <ContentRoot BasePath=""Base/MyLibrary"" Path=""{Path.Combine(".", "nuget", "MyLibrary", "razorContent")}"" />
 </AspNetCoreStaticAssets>";
 
             try
@@ -233,14 +245,18 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var task = new GenerateAspNetCoreStaticAssetsManifest
                 {
                     BuildEngine = buildEngine.Object,
-                    ContentRootDefinitions = new TaskItem[] {
-                        CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>{
-                            ["BasePath"] = "MyLibrary",
+                    ContentRootDefinitions = new TaskItem[]
+                    {
+                        CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
+                        {
+                            // Base path needs to be normalized to '/' as it goes in the url
+                            ["BasePath"] = "Base\\MyLibrary",
                             ["ContentRoot"] = Path.Combine(".", "nuget", "MyLibrary", "razorContent")
                         }),
                         // Comparisons are case insensitive
-                        CreateItem(Path.Combine("wwwroot, site.css"), new Dictionary<string,string>{
-                            ["BasePath"] = "MyLIBRARY",
+                        CreateItem(Path.Combine("wwwroot, site.css"), new Dictionary<string,string>
+                        {
+                            ["BasePath"] = "Base\\MyLIBRARY",
                             ["ContentRoot"] = Path.Combine(".", "nuget", "MyLIBRARY", "razorContent")
                         }),
                     },

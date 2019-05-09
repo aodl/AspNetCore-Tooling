@@ -61,7 +61,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       </_ExternalAspNetCoreStaticAssetManifestEntry>
     </ItemGroup>
 
-    <Hash ItemsToHash="@(_ExternalAspNetCoreStaticAssetManifestEntry)">
+    <!-- We need a transform here to make sure we hash the metadata -->
+    <Hash ItemsToHash="@(_ExternalAspNetCoreStaticAssetManifestEntry->'%(Identity)%(BasePath)%(ContentRoot)')">
       <Output TaskParameter="HashResult" PropertyName="_AspNetCoreStaticAssetCacheHash" />
     </Hash>
 
@@ -84,7 +85,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     packages and projects.
 
     Ideally, each package/project contains a unique base path and a given content
-    root, but we don't check for duplicates on neither of them.
+    root, but we don't check for duplicates on either of them.
      -->
 
   <Target 
@@ -153,9 +154,9 @@ Copyright (c) .NET Foundation. All rights reserved.
           * For referenced projects it corresponds to <<FullProjectRefPath>>/wwwroot
           * For the current projects it corresponds to $(MSBuildThisProjectFileDirectory)wwwroot\
         -->
-        <ContentRoot>$([MSBuild]::EnsureTrailingSlash('$(MSBuildThisProjectFileDirectory)'))wwwroot</ContentRoot>
+        <ContentRoot>$([MSBuild]::EnsureTrailingSlash('$(MSBuildThisProjectFileDirectory)'))wwwroot\</ContentRoot>
         <!-- Subsection (folder) from the url space where content for this library will be served. -->
-        <BasePath>_content\$(_SafeBasePath)</BasePath>
+        <BasePath>_content\$(_SafeBasePath)\</BasePath>
         <!-- Relative path from the content root for the file. At publish time, we combine the BasePath + Relative
   path to determine the final path for the file. -->
         <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
