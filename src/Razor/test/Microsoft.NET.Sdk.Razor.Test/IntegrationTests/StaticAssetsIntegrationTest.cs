@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 // Wait for 10 seconds or fail. If we take longer
                 // it likely means we are adding unexpected dependencies.
-                Assert.True(process.HasExited);
+                Assert.True(process.HasExited, "Process did not finish running.");
                 output.WriteLine(process.StandardOutput.ReadToEnd());
                 Assert.Equal(0, process.ExitCode);
             }
