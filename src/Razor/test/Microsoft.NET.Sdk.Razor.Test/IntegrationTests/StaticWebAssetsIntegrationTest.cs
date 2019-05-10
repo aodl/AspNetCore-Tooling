@@ -230,9 +230,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 {
                     FileName = DotNetMuxer.MuxerPathOrDefault(),
 #if DEBUG
-                    Arguments = "msbuild /t:Pack -c Debug",
+                    Arguments = "msbuild /t:Restore;Pack /p:Configuration=Debug",
 #else
-                    Arguments = "pack -c Release",
+                    Arguments = "msbuild /t:Restore;Pack /p:Configuration=Release",
 #endif
                     WorkingDirectory = project,
                     RedirectStandardOutput = true,
