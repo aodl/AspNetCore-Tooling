@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
@@ -36,13 +35,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithPackageAndP2PReference")]
         public async Task Build_GeneratesStaticWebAssetsManifest_Success_CreatesManifest()
         {
-            // For some reason when using a custom package cache the imports won't get added on
-            // the initial restore, so we restore the packages ourselves.
-            await DotnetMSBuild("Restore");
+            var result = await DotnetMSBuild("Build", "/restore");
 
             var expectedManifest = GetExpectedManifest();
-
-            var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
 
@@ -59,30 +54,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        private string GetExpectedManifest()
-        {
-            var restorePath = LocalNugetPackagesCacheTempPath;
-            var projects = new[]
-            {
-                Path.Combine(restorePath, "packagelibrarytransitivedependency", "1.0.0", "buildTransitive", "..", "razorContent") + Path.DirectorySeparatorChar,
-                Path.Combine(restorePath, "packagelibrarydirectdependency", "1.0.0", "build", "..", "razorContent") + Path.DirectorySeparatorChar
-            };
-
-            return $@"<StaticWebAssets Version=""1.0"">
-  <ContentRoot BasePath=""_content/PackageLibraryTransitiveDependency"" Path=""{projects[0]}"" />
-  <ContentRoot BasePath=""_content/PackageLibraryDirectDependency"" Path=""{projects[1]}"" />
-</StaticWebAssets>";
-        }
-
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_DoesNotEmbedManifestWhen_NoStaticResourcesAvailable()
         {
-            // For some reason when using a custom package cache the imports won't get added on
-            // the initial restore, so we restore the packages ourselves.
-            await DotnetMSBuild("Restore");
-
-            var result = await DotnetMSBuild("Build");
+            var result = await DotnetMSBuild("Build", "/restore");
 
             Assert.BuildPassed(result);
 
@@ -98,11 +74,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithPackageAndP2PReference")]
         public async Task Clean_Success_RemovesManifestAndCache()
         {
-            // For some reason when using a custom package cache the imports won't get added on
-            // the initial restore, so we restore the packages ourselves.
-            await DotnetMSBuild("Restore");
-
-            var result = await DotnetMSBuild("Build");
+            var result = await DotnetMSBuild("Build", "/restore");
 
             Assert.BuildPassed(result);
 
@@ -124,11 +96,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public async Task Rebuild_Success_RecreatesManifestAndCache()
         {
             // Arrange
-            // For some reason when using a custom package cache the imports won't get added on
-            // the initial restore, so we restore the packages ourselves.
-            await DotnetMSBuild("Restore");
+            var result = await DotnetMSBuild("Build", "/restore");
 
-            var result = await DotnetMSBuild("Build");
+            var expectedManifest = GetExpectedManifest();
 
             Assert.BuildPassed(result);
 
@@ -167,7 +137,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             using (var reader = new StreamReader(assembly))
             {
                 var data = reader.ReadToEnd();
-                Assert.Equal(GetExpectedManifest(), data);
+                Assert.Equal(expectedManifest, data);
             }
         }
 
@@ -175,12 +145,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithPackageAndP2PReference")]
         public async Task GenerateStaticWebAssetsManifest_IncrementalBuild_ReusesManifest()
         {
-            // Arrange
-            // For some reason when using a custom package cache the imports won't get added on
-            // the initial restore, so we restore the packages ourselves.
-            await DotnetMSBuild("Restore");
-
-            var result = await DotnetMSBuild("GenerateStaticWebAssetsManifest");
+            var result = await DotnetMSBuild("GenerateStaticWebAssetsManifest", "/restore");
 
             Assert.BuildPassed(result);
 
@@ -224,6 +189,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             return Task.CompletedTask;
         }
+
+        private string GetExpectedManifest()
+        {
+            var restorePath = LocalNugetPackagesCacheTempPath;
+            var projects = new[]
+            {
+                Path.Combine(restorePath, "packagelibrarytransitivedependency", "1.0.0", "buildTransitive", "..", "razorContent") + Path.DirectorySeparatorChar,
+                Path.Combine(restorePath, "packagelibrarydirectdependency", "1.0.0", "build", "..", "razorContent") + Path.DirectorySeparatorChar
+            };
+
+            return $@"<StaticWebAssets Version=""1.0"">
+  <ContentRoot BasePath=""_content/PackageLibraryTransitiveDependency"" Path=""{projects[0]}"" />
+  <ContentRoot BasePath=""_content/PackageLibraryDirectDependency"" Path=""{projects[1]}"" />
+</StaticWebAssets>";
+        }
     }
 
     public class PackageTestProjectsFixture
@@ -250,7 +230,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 {
                     FileName = DotNetMuxer.MuxerPathOrDefault(),
 #if DEBUG
-                    Arguments = "pack -c Debug",
+                    Arguments = "msbuild /t:Pack -c Debug",
 #else
                     Arguments = "pack -c Release",
 #endif
