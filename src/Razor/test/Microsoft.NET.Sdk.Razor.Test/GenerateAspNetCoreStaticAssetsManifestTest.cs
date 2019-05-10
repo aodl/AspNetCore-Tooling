@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
-    public class GenerateAspNetCoreStaticAssetsManifestTest
+    public class GenerateStaticWebAssetssManifestTest
     {
         [Fact]
         public void ReturnsError_WhenBasePathIsMissing()
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new GenerateAspNetCoreStaticAssetsManifest
+            var task = new GenerateStaticWebAssetssManifest
             {
                 BuildEngine = buildEngine.Object,
                 ContentRootDefinitions = new TaskItem[]
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new GenerateAspNetCoreStaticAssetsManifest
+            var task = new GenerateStaticWebAssetssManifest
             {
                 BuildEngine = buildEngine.Object,
                 ContentRootDefinitions = new TaskItem[]
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new GenerateAspNetCoreStaticAssetsManifest
+            var task = new GenerateStaticWebAssetssManifest
             {
                 BuildEngine = buildEngine.Object,
                 ContentRootDefinitions = new TaskItem[]
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new GenerateAspNetCoreStaticAssetsManifest
+            var task = new GenerateStaticWebAssetssManifest
             {
                 BuildEngine = buildEngine.Object,
                 ContentRootDefinitions = new TaskItem[]
@@ -155,13 +155,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             // Arrange
             var file = Path.GetTempFileName();
-            var expectedDocument = @"<AspNetCoreStaticAssets Version=""1.0"" />";
+            var expectedDocument = @"<StaticWebAssetss Version=""1.0"" />";
 
             try
             {
                 var buildEngine = new Mock<IBuildEngine>();
 
-                var task = new GenerateAspNetCoreStaticAssetsManifest
+                var task = new GenerateStaticWebAssetssManifest
                 {
                     BuildEngine = buildEngine.Object,
                     ContentRootDefinitions = new TaskItem[] { },
@@ -190,15 +190,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             // Arrange
             var file = Path.GetTempFileName();
-            var expectedDocument = $@"<AspNetCoreStaticAssets Version=""1.0"">
+            var expectedDocument = $@"<StaticWebAssetss Version=""1.0"">
   <ContentRoot BasePath=""MyLibrary"" Path=""{Path.Combine(".", "nuget", "MyLibrary", "razorContent")}"" />
-</AspNetCoreStaticAssets>";
+</StaticWebAssetss>";
 
             try
             {
                 var buildEngine = new Mock<IBuildEngine>();
 
-                var task = new GenerateAspNetCoreStaticAssetsManifest
+                var task = new GenerateStaticWebAssetssManifest
                 {
                     BuildEngine = buildEngine.Object,
                     ContentRootDefinitions = new TaskItem[]
@@ -234,15 +234,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             // Arrange
             var file = Path.GetTempFileName();
-            var expectedDocument = $@"<AspNetCoreStaticAssets Version=""1.0"">
+            var expectedDocument = $@"<StaticWebAssetss Version=""1.0"">
   <ContentRoot BasePath=""Base/MyLibrary"" Path=""{Path.Combine(".", "nuget", "MyLibrary", "razorContent")}"" />
-</AspNetCoreStaticAssets>";
+</StaticWebAssetss>";
 
             try
             {
                 var buildEngine = new Mock<IBuildEngine>();
 
-                var task = new GenerateAspNetCoreStaticAssetsManifest
+                var task = new GenerateStaticWebAssetssManifest
                 {
                     BuildEngine = buildEngine.Object,
                     ContentRootDefinitions = new TaskItem[]

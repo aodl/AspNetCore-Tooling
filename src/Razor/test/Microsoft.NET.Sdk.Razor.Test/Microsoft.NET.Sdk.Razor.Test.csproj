@@ -19,7 +19,7 @@
   <ItemGroup>
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(BuildVariablesGeneratedFile)" Condition="Exists('$(BuildVariablesGeneratedFile)')" />
-    <Compile Include="..\..\src\Microsoft.NET.Sdk.Razor\GenerateAspNetCoreStaticAssetsManifest.cs" Link="TasksSource\GenerateAspNetCoreStaticAssetsManifest.cs" />
+    <Compile Include="..\..\src\Microsoft.NET.Sdk.Razor\GenerateStaticWebAssetssManifest.cs" Link="TasksSource\GenerateStaticWebAssetssManifest.cs" />
   </ItemGroup>
 
   <ItemGroup>

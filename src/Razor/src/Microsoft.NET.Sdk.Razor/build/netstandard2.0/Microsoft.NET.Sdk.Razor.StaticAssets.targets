@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Microsoft.NET.Sdk.Razor.StaticAssets
+Microsoft.NET.Sdk.Razor.StaticWebAssetss
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -14,66 +14,66 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Targets that support static content scenarios in ASP.NET Core.
        The main targets are:
-       * GenerateAspNetCoreStaticAssetsManifest: Creates a manifest file to use in development with
+       * GenerateStaticWebAssetssManifest: Creates a manifest file to use in development with
          the paths to all the references packages and projects content roots.
-       * ResolveAspNetCoreStaticAssetsInputs: Collects all the static assets from different sources
+       * ResolveStaticWebAssetssInputs: Collects all the static assets from different sources
          * Current project.
          * Referenced project.
          * Referenced packages.
   -->
 
   <UsingTask
-    TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateAspNetCoreStaticAssetsManifest"
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateStaticWebAssetssManifest"
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
   <PropertyGroup>
-    <GenerateAspNetCoreStaticAssetsManifestDependsOn>
-      ResolveAspNetCoreStaticAssetsInputs;
-      _ResolveAspNetCoreStaticAssetsConfiguration;
-      _CreateAspNetCoreStaticAssetInputsCacheFile
-    </GenerateAspNetCoreStaticAssetsManifestDependsOn>
-    <ResolveAspNetCoreStaticAssetsInputsDependsOn>_ResolveAspNetCoreStaticAssetsConfiguration</ResolveAspNetCoreStaticAssetsInputsDependsOn>
+    <GenerateStaticWebAssetssManifestDependsOn>
+      ResolveStaticWebAssetssInputs;
+      _ResolveStaticWebAssetssConfiguration;
+      _CreateStaticWebAssetsInputsCacheFile
+    </GenerateStaticWebAssetssManifestDependsOn>
+    <ResolveStaticWebAssetssInputsDependsOn>_ResolveStaticWebAssetssConfiguration</ResolveStaticWebAssetssInputsDependsOn>
   </PropertyGroup>
 
-  <Target Name="_ResolveAspNetCoreStaticAssetsConfiguration">
+  <Target Name="_ResolveStaticWebAssetssConfiguration">
   
     <PropertyGroup>
-      <_GeneratedAspnetCoreStaticAssetInputsCacheFile>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticAssets.cache</_GeneratedAspnetCoreStaticAssetInputsCacheFile>
-      <_GeneratedAspNetCoreStaticAssetsDevelopmentManifest>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticAssets.xml</_GeneratedAspNetCoreStaticAssetsDevelopmentManifest>
+      <_GeneratedStaticWebAssetsInputsCacheFile>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticWebAssetss.cache</_GeneratedStaticWebAssetsInputsCacheFile>
+      <_GeneratedStaticWebAssetssDevelopmentManifest>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticWebAssetss.xml</_GeneratedStaticWebAssetssDevelopmentManifest>
     </PropertyGroup>
 
   </Target>
 
   <Target 
-    Name="_CreateAspNetCoreStaticAssetInputsCacheFile"
-    DependsOnTargets="ResolveAspNetCoreStaticAssetsInputs;_ResolveAspNetCoreStaticAssetsConfiguration">
+    Name="_CreateStaticWebAssetsInputsCacheFile"
+    DependsOnTargets="ResolveStaticWebAssetssInputs;_ResolveStaticWebAssetssConfiguration">
     
     <ItemGroup>
       <!-- 
       This is the list of inputs that will be used for generating the manifest used during development. 
       -->
-      <_ExternalAspNetCoreStaticAssetManifestEntry
-        Include="%(AspNetCoreStaticAsset.Identity)"
+      <_ExternalStaticWebAssetsManifestEntry
+        Include="%(StaticWebAssets.Identity)"
         Condition="'%(SourceType)' != ''">
-          <BasePath>%(AspNetCoreStaticAsset.BasePath)</BasePath>
-          <ContentRoot>%(AspNetCoreStaticAsset.ContentRoot)</ContentRoot>
-      </_ExternalAspNetCoreStaticAssetManifestEntry>
+          <BasePath>%(StaticWebAssets.BasePath)</BasePath>
+          <ContentRoot>%(StaticWebAssets.ContentRoot)</ContentRoot>
+      </_ExternalStaticWebAssetsManifestEntry>
     </ItemGroup>
 
     <!-- We need a transform here to make sure we hash the metadata -->
-    <Hash ItemsToHash="@(_ExternalAspNetCoreStaticAssetManifestEntry->'%(Identity)%(BasePath)%(ContentRoot)')">
-      <Output TaskParameter="HashResult" PropertyName="_AspNetCoreStaticAssetCacheHash" />
+    <Hash ItemsToHash="@(_ExternalStaticWebAssetsManifestEntry->'%(Identity)%(BasePath)%(ContentRoot)')">
+      <Output TaskParameter="HashResult" PropertyName="_StaticWebAssetsCacheHash" />
     </Hash>
 
     <WriteLinesToFile 
-      Lines="$(_AspNetCoreStaticAssetCacheHash)" 
-      File="$(_GeneratedAspnetCoreStaticAssetInputsCacheFile)" 
+      Lines="$(_StaticWebAssetsCacheHash)" 
+      File="$(_GeneratedStaticWebAssetsInputsCacheFile)" 
       Overwrite="True" 
       WriteOnlyWhenDifferent="True" />
 
     <ItemGroup>
-      <FileWrites Include="$(_GeneratedAspnetCoreStaticAssetInputsCacheFile)" />
+      <FileWrites Include="$(_GeneratedStaticWebAssetsInputsCacheFile)" />
     </ItemGroup>
 
   </Target>
@@ -89,38 +89,38 @@ Copyright (c) .NET Foundation. All rights reserved.
      -->
 
   <Target 
-    Name="GenerateAspNetCoreStaticAssetsManifest"
-    Inputs="$(_GeneratedAspnetCoreStaticAssetInputsCacheFile)"
-    Outputs="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)"
+    Name="GenerateStaticWebAssetssManifest"
+    Inputs="$(_GeneratedStaticWebAssetsInputsCacheFile)"
+    Outputs="$(_GeneratedStaticWebAssetssDevelopmentManifest)"
     BeforeTargets="AssignTargetPaths"
-    DependsOnTargets="$(GenerateAspNetCoreStaticAssetsManifestDependsOn)">
+    DependsOnTargets="$(GenerateStaticWebAssetssManifestDependsOn)">
   
-    <GenerateAspNetCoreStaticAssetsManifest 
-      ContentRootDefinitions="@(_ExternalAspNetCoreStaticAssetManifestEntry)"
-      TargetManifestPath="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)" />
+    <GenerateStaticWebAssetssManifest 
+      ContentRootDefinitions="@(_ExternalStaticWebAssetsManifestEntry)"
+      TargetManifestPath="$(_GeneratedStaticWebAssetssDevelopmentManifest)" />
   
       <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
     <ItemGroup>
-      <EmbeddedResource Condition="'@(_ExternalAspNetCoreStaticAssetManifestEntry->Count())' != '0'"
-        Include="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)"
-        LogicalName="Microsoft.AspNetCore.StaticAssets.xml" />
+      <EmbeddedResource Condition="'@(_ExternalStaticWebAssetsManifestEntry->Count())' != '0'"
+        Include="$(_GeneratedStaticWebAssetssDevelopmentManifest)"
+        LogicalName="Microsoft.AspNetCore.StaticWebAssetss.xml" />
     </ItemGroup>
 
     <ItemGroup>
-      <FileWrites Include="$(_GeneratedAspNetCoreStaticAssetsDevelopmentManifest)" />
+      <FileWrites Include="$(_GeneratedStaticWebAssetssDevelopmentManifest)" />
     </ItemGroup>
 
   </Target>
 
-  <!-- This target collects all the AspNetCoreStaticAsset from different sources:
-       * The current project AspNetCoreStaticAsset that come from wwwroot\** by default.
+  <!-- This target collects all the StaticWebAssets from different sources:
+       * The current project StaticWebAssets that come from wwwroot\** by default.
        * Assets from referenced projects that get retrieved invoking an MSBuild target on
          the referenced projects.
        * Assets from the referenced packages. These will be implicitly included when nuget
          restores the package and includes the package props file for the package.
   -->
   <Target 
-    Name="ResolveAspNetCoreStaticAssetsInputs">
+    Name="ResolveStaticWebAssetssInputs">
     <PropertyGroup>
       <!-- The _SafeBasePath is used as a path segment in the urls that we will
            be exposing content from when the library is referenced as a package
@@ -135,7 +135,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_SafeBasePath>$(PackageId.Replace('.',''))</_SafeBasePath>
     </PropertyGroup>
 
-    <!-- AspNetCoreStaticAsset from the current project -->
+    <!-- StaticWebAssets from the current project -->
 
     <ItemGroup>
       <!-- 
@@ -143,7 +143,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         We don't want to capture any content outside the content root, that's why we don't do
         @(Content) here.
       -->
-      <AspNetCoreStaticAsset Include="wwwroot\**">
+      <StaticWebAssets Include="wwwroot\**">
         <!-- (PackageReference,ProjectReference,'' (CurrentProject)) -->
         <SourceType></SourceType>
         <!-- Identifier describing the source, the package id, the project name, empty for the current project.  -->
@@ -161,13 +161,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   path to determine the final path for the file. -->
         <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
 
-      </AspNetCoreStaticAsset>
+      </StaticWebAssets>
     </ItemGroup>
 
-    <!-- AspNetCoreStaticAsset from referenced projects. -->
+    <!-- StaticWebAssets from referenced projects. -->
     <!-- TODO: Include implementation -->
 
-    <!-- AspNetCoreStaticAsset from packages are already available, so we don't do anything. -->
+    <!-- StaticWebAssets from packages are already available, so we don't do anything. -->
   </Target>
 
 </Project>

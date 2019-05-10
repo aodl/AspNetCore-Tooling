@@ -1,11 +1,11 @@
 <Project>
   <ItemGroup>
-    <AspNetCoreStaticAsset Include="$(MSBuildThisFileDirectory)..\razorContent\**">
+    <StaticWebAssets Include="$(MSBuildThisFileDirectory)..\razorContent\**">
       <SourceType>Package</SourceType>
       <SourceId>PackageLibraryTransitiveDependency</SourceId>
       <ContentRoot>$([MSBuild]::EnsureTrailingSlash('$(MSBuildThisFileDirectory)..\razorContent'))</ContentRoot>
       <BasePath>_content\PackageLibraryTransitiveDependency</BasePath>
       <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
-    </AspNetCoreStaticAsset>
+    </StaticWebAssets>
   </ItemGroup>
 </Project>

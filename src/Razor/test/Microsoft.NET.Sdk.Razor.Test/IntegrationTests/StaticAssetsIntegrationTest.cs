@@ -15,9 +15,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class StaticAssetsIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>, IClassFixture<PackageTestProjectsFixture>, IAsyncLifetime
+    public class StaticWebAssetssIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>, IClassFixture<PackageTestProjectsFixture>, IAsyncLifetime
     {
-        public StaticAssetsIntegrationTest(
+        public StaticWebAssetssIntegrationTest(
             BuildServerTestFixture buildServer,
             PackageTestProjectsFixture packageTestProjects,
             ITestOutputHelper output)
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("AppWithPackageAndP2PReference")]
-        public async Task Build_GeneratesAspNetCoreStaticAssetsManifest_Success_CreatesManifest()
+        public async Task Build_GeneratesStaticWebAssetssManifest_Success_CreatesManifest()
         {
             // For some reason when using a custom package cache the imports won't get added on
             // the initial restore, so we restore the packages ourselves.
@@ -46,12 +46,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            // GenerateAspNetCoreStaticAssetsManifest should generate the manifest and the cache.
-            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.xml");
-            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.cache");
+            // GenerateStaticWebAssetssManifest should generate the manifest and the cache.
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.xml");
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.cache");
 
             var path = Assert.FileExists(result, OutputPath, "AppWithPackageAndP2PReference.dll");
-            var assembly = Assert.ContainsEmbeddedResource(path, "Microsoft.AspNetCore.StaticAssets.xml");
+            var assembly = Assert.ContainsEmbeddedResource(path, "Microsoft.AspNetCore.StaticWebAssetss.xml");
             using (var reader = new StreamReader(assembly))
             {
                 var data = await reader.ReadToEndAsync();
@@ -75,10 +75,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     p.Contains("transitive", StringComparison.OrdinalIgnoreCase) ? "buildTransitive" : "build", "..", "razorContent") + Path.DirectorySeparatorChar)
                 .ToArray();
 
-            return $@"<AspNetCoreStaticAssets Version=""1.0"">
+            return $@"<StaticWebAssetss Version=""1.0"">
   <ContentRoot BasePath=""_content/PackageLibraryTransitiveDependency"" Path=""{projects[0]}"" />
   <ContentRoot BasePath=""_content/PackageLibraryDirectDependency"" Path=""{projects[1]}"" />
-</AspNetCoreStaticAssets>";
+</StaticWebAssetss>";
         }
 
         [Fact]
@@ -93,12 +93,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            // GenerateAspNetCoreStaticAssetsManifest should generate the manifest and the cache.
-            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.xml");
-            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.cache");
+            // GenerateStaticWebAssetssManifest should generate the manifest and the cache.
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.xml");
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.cache");
 
             var path = Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
-            Assert.DoesNotContainEmbeddedResource(path, "Microsoft.AspNetCore.StaticAssets.xml");
+            Assert.DoesNotContainEmbeddedResource(path, "Microsoft.AspNetCore.StaticWebAssetss.xml");
         }
 
         [Fact]
@@ -113,17 +113,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            // GenerateAspNetCoreStaticAssetsManifest should generate the manifest and the cache.
-            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.xml");
-            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.cache");
+            // GenerateStaticWebAssetssManifest should generate the manifest and the cache.
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.xml");
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.cache");
 
             var cleanResult = await DotnetMSBuild("Clean");
 
             Assert.BuildPassed(cleanResult);
 
             // Clean should delete the manifest and the cache.
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.cache");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.xml");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.cache");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.xml");
         }
 
         [Fact]
@@ -139,16 +139,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            // GenerateAspNetCoreStaticAssetsManifest should generate the manifest and the cache.
-            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.xml");
-            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.cache");
+            // GenerateStaticWebAssetssManifest should generate the manifest and the cache.
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.xml");
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.cache");
 
             var directoryPath = Path.Combine(result.Project.DirectoryPath, IntermediateOutputPath);
             var thumbPrints = new Dictionary<string, FileThumbPrint>();
             var thumbPrintFiles = new[]
             {
-                Path.Combine(directoryPath, "Microsoft.AspNetCore.StaticAssets.xml"),
-                Path.Combine(directoryPath, "Microsoft.AspNetCore.StaticAssets.cache"),
+                Path.Combine(directoryPath, "Microsoft.AspNetCore.StaticWebAssetss.xml"),
+                Path.Combine(directoryPath, "Microsoft.AspNetCore.StaticWebAssetss.cache"),
             };
 
             foreach (var file in thumbPrintFiles)
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
 
             var path = Assert.FileExists(result, OutputPath, "AppWithPackageAndP2PReference.dll");
-            var assembly = Assert.ContainsEmbeddedResource(path, "Microsoft.AspNetCore.StaticAssets.xml");
+            var assembly = Assert.ContainsEmbeddedResource(path, "Microsoft.AspNetCore.StaticWebAssetss.xml");
             using (var reader = new StreamReader(assembly))
             {
                 var data = reader.ReadToEnd();
@@ -180,27 +180,27 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("AppWithPackageAndP2PReference")]
-        public async Task GenerateAspNetCoreStaticAssetsManifest_IncrementalBuild_ReusesManifest()
+        public async Task GenerateStaticWebAssetssManifest_IncrementalBuild_ReusesManifest()
         {
             // Arrange
             // For some reason when using a custom package cache the imports won't get added on
             // the initial restore, so we restore the packages ourselves.
             await DotnetMSBuild("Restore");
 
-            var result = await DotnetMSBuild("GenerateAspNetCoreStaticAssetsManifest");
+            var result = await DotnetMSBuild("GenerateStaticWebAssetssManifest");
 
             Assert.BuildPassed(result);
 
-            // GenerateAspNetCoreStaticAssetsManifest should generate the manifest and the cache.
-            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.xml");
-            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticAssets.cache");
+            // GenerateStaticWebAssetssManifest should generate the manifest and the cache.
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.xml");
+            Assert.FileExists(result, IntermediateOutputPath, "Microsoft.AspNetCore.StaticWebAssetss.cache");
 
             var directoryPath = Path.Combine(result.Project.DirectoryPath, IntermediateOutputPath);
             var thumbPrints = new Dictionary<string, FileThumbPrint>();
             var thumbPrintFiles = new[]
             {
-                Path.Combine(directoryPath, "Microsoft.AspNetCore.StaticAssets.xml"),
-                Path.Combine(directoryPath, "Microsoft.AspNetCore.StaticAssets.cache"),
+                Path.Combine(directoryPath, "Microsoft.AspNetCore.StaticWebAssetss.xml"),
+                Path.Combine(directoryPath, "Microsoft.AspNetCore.StaticWebAssetss.cache"),
             };
 
             foreach (var file in thumbPrintFiles)
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
 
             // Act
-            var incremental = await DotnetMSBuild("GenerateAspNetCoreStaticAssetsManifest");
+            var incremental = await DotnetMSBuild("GenerateStaticWebAssetssManifest");
 
             // Assert
             Assert.BuildPassed(incremental);
