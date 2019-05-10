@@ -24,14 +24,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);wwwroot\**</DefaultWebContentItemExcludes>
   </PropertyGroup>
 
-    <!-- 
-      Properties for static web assets resources
-    -->
-  <PropertyGroup>
-    <_GeneratedStaticWebAssetsInputsCacheFile>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticWebAssets.cache</_GeneratedStaticWebAssetsInputsCacheFile>
-    <_GeneratedStaticWebAssetsDevelopmentManifest>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticWebAssets.xml</_GeneratedStaticWebAssetsDevelopmentManifest>
-  </PropertyGroup>
-
   <!--
     Default properties for common Razor SDK behavior.
   -->

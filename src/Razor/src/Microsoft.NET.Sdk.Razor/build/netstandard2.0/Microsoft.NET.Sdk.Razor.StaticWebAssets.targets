@@ -16,7 +16,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        The main targets are:
        * GenerateStaticWebAssetsManifest: Creates a manifest file to use in development with
          the paths to all the references packages and projects content roots.
-       * ResolveStaticWebAssetsInputs: Collects all the static web assets from different sources
+       * ResolveStaticWebAssetsInputs: Collects all the static assets from different sources
          * Current project.
          * Referenced project.
          * Referenced packages.
@@ -38,6 +38,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(AssignTargetPathsDependsOn)
     </AssignTargetPathsDependsOn>
 
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_GeneratedStaticWebAssetsInputsCacheFile>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticWebAssets.cache</_GeneratedStaticWebAssetsInputsCacheFile>
+    <_GeneratedStaticWebAssetsDevelopmentManifest>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticWebAssets.xml</_GeneratedStaticWebAssetsDevelopmentManifest>
   </PropertyGroup>
 
   <Target 
