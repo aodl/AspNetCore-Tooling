@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             ProjectDirectory project,
             string arguments,
             TimeSpan? timeout = null,
-            MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
+            MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet,
+            string localPackageCache = null)
         {
             var processStartInfo = new ProcessStartInfo()
             {
@@ -28,6 +29,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
             };
+
+            if (localPackageCache != null)
+            {
+                processStartInfo.Environment.Add("NUGET_PACKAGES", localPackageCache);
+            }
 
             if (msBuildProcessKind == MSBuildProcessKind.Desktop)
             {
