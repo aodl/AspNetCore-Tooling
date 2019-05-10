@@ -382,39 +382,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                             continue;
                         }
 
-                        checked // arithmetic overflow here could cause AV
-                        {
-                            // Locate start and end of PE image in unmanaged memory.
-                            var block = peReader.GetEntireImage();
-                            Debug.Assert(block.Pointer != null && block.Length > 0);
-
-                            var peImageStart = block.Pointer;
-                            var peImageEnd = peImageStart + block.Length;
-
-                            // Locate offset to resources within PE image.
-                            int offsetToResources;
-                            if (!peReader.PEHeaders.TryGetDirectoryOffset(peReader.PEHeaders.CorHeader.ResourcesDirectory, out offsetToResources))
-                            {
-                                throw new InvalidDataException("Failed to get offset to resources in PE file.");
-                            }
-                            Debug.Assert(offsetToResources > 0);
-                            var resourceStart = peImageStart + offsetToResources + resource.Offset;
-
-                            // Get the length of the the resource from the first 4 bytes.
-                            if (resourceStart >= peImageEnd - sizeof(int))
-                            {
-                                throw new InvalidDataException("resource offset out of bounds.");
-                            }
-
-                            var resourceLength = new BlobReader(resourceStart, sizeof(int)).ReadInt32();
-                            resourceStart += sizeof(int);
-                            if (resourceLength < 0 || resourceStart >= peImageEnd - resourceLength)
-                            {
-                                throw new InvalidDataException("resource offset or length out of bounds.");
-                            }
-
-                            return new UnmanagedMemoryStream(resourceStart, resourceLength);
-                        }
+                        // We are not taking resource.Offset into account here.
+                        // We currently only have the casuistic that we are embedding a single resource.
+                        // If that changes we'll have to change this test code, but as its hard we won't do it for now.
+                        var resourcesSection = peReader.GetSectionData(peReader.PEHeaders.CorHeader.ResourcesDirectory.RelativeVirtualAddress);
+                        var resourcesReader = resourcesSection.GetReader();
+                        var resourceSizeInBytes = resourcesReader.ReadInt32();
+                        var resourceBytes = resourcesReader.ReadBytes(resourceSizeInBytes);
+                        return new MemoryStream(resourceBytes, writable: false);
                     }
                 }
             }
