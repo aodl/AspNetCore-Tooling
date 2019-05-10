@@ -107,6 +107,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     // The local cache folder needs to exist so that nuget 
                     Directory.CreateDirectory(LocalNugetPackagesCacheTempPath);
                 }
+
+                buildArgumentList.Add($"/p:NugetPackageRoot={LocalNugetPackagesCacheTempPath}");
             }
 
             if (!suppressBuildServer)
@@ -143,8 +145,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Project,
                 buildArguments,
                 timeout,
-                msBuildProcessKind,
-                UseLocalPackageCache ? LocalNugetPackagesCacheTempPath : null);
+                msBuildProcessKind);
         }
 
         internal void AddProjectFileContent(string content)
