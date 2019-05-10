@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             // We want to validate that there are no different item groups that share either the same base path
             // but different content roots or that share the same content root but different base paths.
-            // We pass in all the static assets that we discovered to this task without making any distinction for
+            // We pass in all the static web assets that we discovered to this task without making any distinction for
             // duplicates, so here we skip elements for which we are already tracking an element with the same
             // content root path and same base path.
 

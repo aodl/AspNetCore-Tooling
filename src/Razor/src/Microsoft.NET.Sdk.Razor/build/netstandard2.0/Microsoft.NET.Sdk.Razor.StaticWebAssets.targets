@@ -16,7 +16,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        The main targets are:
        * GenerateStaticWebAssetsManifest: Creates a manifest file to use in development with
          the paths to all the references packages and projects content roots.
-       * ResolveStaticWebAssetsInputs: Collects all the static assets from different sources
+       * ResolveStaticWebAssetsInputs: Collects all the static web assets from different sources
          * Current project.
          * Referenced project.
          * Referenced packages.
@@ -30,10 +30,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <GenerateStaticWebAssetsManifestDependsOn>
       ResolveStaticWebAssetsInputs;
-      _ResolveStaticWebAssetsConfiguration;
       _CreateStaticWebAssetsInputsCacheFile
     </GenerateStaticWebAssetsManifestDependsOn>
-    <ResolveStaticWebAssetsInputsDependsOn>_ResolveStaticWebAssetsConfiguration</ResolveStaticWebAssetsInputsDependsOn>
 
     <AssignTargetPathsDependsOn>
       GenerateStaticWebAssetsManifest;
@@ -42,18 +40,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </PropertyGroup>
 
-  <Target Name="_ResolveStaticWebAssetsConfiguration">
-  
-    <PropertyGroup>
-      <_GeneratedStaticWebAssetsInputsCacheFile>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticWebAssets.cache</_GeneratedStaticWebAssetsInputsCacheFile>
-      <_GeneratedStaticWebAssetsDevelopmentManifest>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticWebAssets.xml</_GeneratedStaticWebAssetsDevelopmentManifest>
-    </PropertyGroup>
-
-  </Target>
-
   <Target 
     Name="_CreateStaticWebAssetsInputsCacheFile"
-    DependsOnTargets="ResolveStaticWebAssetsInputs;_ResolveStaticWebAssetsConfiguration">
+    DependsOnTargets="ResolveStaticWebAssetsInputs">
     
     <ItemGroup>
       <!-- 
@@ -86,7 +75,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- 
     This target generates a manifest for development time that includes information
-    about the base path for the referenced package and project static assets. The
+    about the base path for the referenced package and project static web assets. The
     manifest includes the content root and the base path for each of the referenced
     packages and projects.
 

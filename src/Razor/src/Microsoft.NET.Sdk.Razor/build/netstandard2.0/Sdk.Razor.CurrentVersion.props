@@ -15,13 +15,21 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
 
   <!--
-    Properties for static assets in the Razor SDK.
+    Properties for static web assets in the Razor SDK.
   -->
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);**\node_modules\**;node_modules\**</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**\jspm_packages\**;jspm_packages\**</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**\bower_components\**;bower_components\**</DefaultItemExcludes>
     <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);wwwroot\**</DefaultWebContentItemExcludes>
+  </PropertyGroup>
+
+    <!-- 
+      Properties for static web assets resources
+    -->
+  <PropertyGroup>
+    <_GeneratedStaticWebAssetsInputsCacheFile>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticWebAssets.cache</_GeneratedStaticWebAssetsInputsCacheFile>
+    <_GeneratedStaticWebAssetsDevelopmentManifest>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticWebAssets.xml</_GeneratedStaticWebAssetsDevelopmentManifest>
   </PropertyGroup>
 
   <!--
