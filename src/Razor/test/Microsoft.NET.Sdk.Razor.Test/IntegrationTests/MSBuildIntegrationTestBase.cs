@@ -143,7 +143,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Project,
                 buildArguments,
                 timeout,
-                msBuildProcessKind);
+                msBuildProcessKind,
+                UseLocalPackageCache ? LocalNugetPackagesCacheTempPath : null);
         }
 
         internal void AddProjectFileContent(string content)

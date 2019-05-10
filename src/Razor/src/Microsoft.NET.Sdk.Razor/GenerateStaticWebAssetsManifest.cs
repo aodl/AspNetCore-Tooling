@@ -12,7 +12,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
-    public class GenerateStaticWebAssetssManifest : Task
+    public class GenerateStaticWebAssetsManifest : Task
     {
         private const string ContentRoot = "ContentRoot";
         private const string BasePath = "BasePath";
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             var document = new XDocument(new XDeclaration("1.0", "utf-8", "yes"));
             var root = new XElement(
-                "StaticWebAssetss",
+                "StaticWebAssets",
                 new XAttribute("Version", "1.0"),
                 CreateNodes());
 
