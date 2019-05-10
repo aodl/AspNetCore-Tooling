@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         public static Stream ContainsEmbeddedResource(string assemblyPath, string resourceName)
         {
-            var stream = ExtractManifest(assemblyPath, resourceName);
+            var stream = ExtractEmbeddedResource(assemblyPath, resourceName);
             Assert.NotNull(stream);
 
             return stream;
@@ -355,11 +355,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         public static void DoesNotContainEmbeddedResource(string assemblyPath, string resourceName)
         {
-            var stream = ExtractManifest(assemblyPath, resourceName);
+            var stream = ExtractEmbeddedResource(assemblyPath, resourceName);
             Assert.Null(stream);
         }
 
-        private static unsafe Stream ExtractManifest(string path, string expectedResourceName)
+        private static Stream ExtractEmbeddedResource(string path, string expectedResourceName)
         {
             using (var peStream = File.OpenRead(path))
             {
