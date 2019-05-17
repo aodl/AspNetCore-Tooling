@@ -45,6 +45,43 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_GeneratedStaticWebAssetsDevelopmentManifest>$(IntermediateOutputPath)Microsoft.AspNetCore.StaticWebAssets.xml</_GeneratedStaticWebAssetsDevelopmentManifest>
   </PropertyGroup>
 
+  <!-- 
+    Targets used for publishing content from razor class libraries
+  -->
+
+  <!--
+    Called after ComputeFilesToPublish but before CopyFilesToPublishDirectory - this target is called when 
+    publishing the project to get a list of files to the output directory.
+  -->
+  <Target
+    Name="_StaticWebAssetsComputeFilesToPublish"
+    AfterTargets="ComputeRefAssembliesToPublish"
+    DependsOnTargets="ResolveStaticWebAssetsInputs">
+
+    <ItemGroup>
+      
+      <!-- Filter the static web assets foreign to the project and then add them to the list of resolved
+           files to publish.
+       -->
+      <_ExternalPublishStaticWebAsset 
+        Include="%(StaticWebAsset.FullPath)"
+        Condition="'%(SourceType)' != ''">
+        
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <RelativePath>wwwroot\%(BasePath)\%(RelativePath)</RelativePath>
+        <TargetPath>wwwroot\%(BasePath)\%(RelativePath)</TargetPath>
+      
+      </_ExternalPublishStaticWebAsset>
+
+      <ResolvedFileToPublish Include="@(_ExternalPublishStaticWebAsset)" />
+    </ItemGroup>
+  
+  </Target>
+
+  <!-- 
+    Targets used for generating the development manifest to use with unpublished apps
+  -->
+
   <Target 
     Name="_CreateStaticWebAssetsInputsCacheFile"
     DependsOnTargets="ResolveStaticWebAssetsInputs">
@@ -110,6 +147,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
   </Target>
+
+  <!-- 
+    Targets used for retrieving static web assets from different sources
+  -->
 
   <!-- This target collects all the StaticWebAssets from different sources:
        * The current project StaticWebAssets that come from wwwroot\** by default.

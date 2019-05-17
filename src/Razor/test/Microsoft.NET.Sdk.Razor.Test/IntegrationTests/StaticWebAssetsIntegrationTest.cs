@@ -55,6 +55,59 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [InitializeTestProject("AppWithPackageAndP2PReference")]
+        public async Task Publish_CopiesStaticWebAssetsToDestinationFolder()
+        {
+            var result = await DotnetMSBuild("Publish", "/restore");
+
+            Assert.BuildPassed(result);
+
+            // GenerateStaticWebAssetsManifest should generate the manifest and the cache.
+            Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "css", "site.css"));
+            Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "js", "pkg-direct-dep.js"));
+            Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryTransitiveDependency", "js", "pkg-transitive-dep.js"));
+        }
+
+        [Fact]
+        [InitializeTestProject("AppWithPackageAndP2PReference")]
+        public async Task Publish_Incremental_DoesNotCopyAnyFiles()
+        {
+            var result = await DotnetMSBuild("Publish", "/restore");
+
+            Assert.BuildPassed(result);
+
+            // GenerateStaticWebAssetsManifest should generate the manifest and the cache.
+            Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "css", "site.css"));
+            Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "js", "pkg-direct-dep.js"));
+            Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryTransitiveDependency", "js", "pkg-transitive-dep.js"));
+            var thumbPrints = new Dictionary<string, FileThumbPrint>();
+            var thumbPrintFiles = new[]
+            {
+                Path.Combine(PublishOutputPath, "wwwroot", "_content", "PackageLibraryDirectDependency", "css", "site.css"),
+                Path.Combine(PublishOutputPath, "wwwroot", "_content", "PackageLibraryDirectDependency", "js", "pkg-direct-dep.js"),
+                Path.Combine(PublishOutputPath, "wwwroot", "_content", "PackageLibraryTransitiveDependency", "js", "pkg-transitive-dep.js"),
+            };
+
+            foreach (var file in thumbPrintFiles)
+            {
+                var thumbprint = GetThumbPrint(file);
+                thumbPrints[file] = thumbprint;
+            }
+
+            // Act
+            var incremental = await DotnetMSBuild("Publish");
+
+            // Assert
+            Assert.BuildPassed(incremental);
+
+            foreach (var file in thumbPrintFiles)
+            {
+                var thumbprint = GetThumbPrint(file);
+                Assert.Equal(thumbPrints[file], thumbprint);
+            }
+        }
+
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_DoesNotEmbedManifestWhen_NoStaticResourcesAvailable()
         {
