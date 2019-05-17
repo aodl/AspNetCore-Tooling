@@ -37,7 +37,8 @@
 
   <ItemGroup>
     <Content Include="build\**" Pack="true" PackagePath="build" />
-    <Content Include="wwwroot\**" Pack="true" PackagePath="razorContent" />
+    <!-- We will remove the line below when we do the item to support packing -->
+    <Content Update="wwwroot\**" Pack="true" PackagePath="razorContent" />
     <ProjectReference Include="..\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj" />
   </ItemGroup>
 
